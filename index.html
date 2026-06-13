@@ -9,34 +9,34 @@
 body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background:#0a0e17; color:#e0e0e0; min-height:100vh; }
 
 .header { background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding:20px 30px; border-bottom:1px solid #2a2a4a; display:flex; align-items:center; gap:16px; }
-.header h1 { font-size:22px; color:#c8a2ff; letter-spacing:2px; }
+.header h1 { font-size:22px; color:#c8a2ff; letter-spacing:2px; cursor:pointer; }
 .header span { font-size:13px; color:#888; margin-left:auto; }
 
 .main { max-width:960px; margin:0 auto; padding:24px 20px; }
 
-.search-box { position:relative; margin-bottom:24px; }
-.search-box input { width:100%; padding:14px 20px 14px 48px; background:#1a1e2e; border:1px solid #3a3a5a; border-radius:12px; color:#e0e0e0; font-size:16px; outline:none; transition:border .2s; }
-.search-box input:focus { border-color:#7c5cbf; }
-.search-box input::placeholder { color:#666; }
-.search-icon { position:absolute; left:16px; top:50%; transform:translateY(-50%); font-size:20px; color:#666; }
+/* 操作按钮行 */
+.op-btns { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:24px; }
+.op-btn { padding:10px 20px; background:#1e2235; border:1px solid #3a3a5a; border-radius:10px; color:#c0c0d0; font-size:14px; cursor:pointer; transition:all .2s; font-weight:500; }
+.op-btn:hover { background:#2a2e45; border-color:#7c5cbf; color:#c8a2ff; transform:translateY(-1px); }
+.op-btn.active { background:#2a2e45; border-color:#c8a2ff; color:#c8a2ff; box-shadow:0 0 12px rgba(124,92,191,0.3); }
+.op-btn.red { border-color:#5a2a2a; }
+.op-btn.red:hover,.op-btn.red.active { border-color:#a04040; color:#ff8080; box-shadow:0 0 12px rgba(160,64,64,0.3); }
+.op-btn.yellow { border-color:#4a4a2a; }
+.op-btn.yellow:hover,.op-btn.yellow.active { border-color:#a0a040; color:#ffe060; box-shadow:0 0 12px rgba(160,160,64,0.3); }
+.op-btn.green { border-color:#2a4a2a; }
+.op-btn.green:hover,.op-btn.green.active { border-color:#40a040; color:#80ff80; box-shadow:0 0 12px rgba(64,160,64,0.3); }
 
-.quick-btns { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
-.quick-btns button { padding:8px 16px; background:#1e2235; border:1px solid #3a3a5a; border-radius:8px; color:#c0c0d0; font-size:13px; cursor:pointer; transition:all .2s; }
-.quick-btns button:hover { background:#2a2e45; border-color:#7c5cbf; color:#c8a2ff; }
-.quick-btns button.red { border-color:#5a2a2a; }
-.quick-btns button.red:hover { border-color:#a04040; color:#ff8080; }
-.quick-btns button.yellow { border-color:#4a4a2a; }
-.quick-btns button.yellow:hover { border-color:#a0a040; color:#ffe060; }
-.quick-btns button.green { border-color:#2a4a2a; }
-.quick-btns button.green:hover { border-color:#40a040; color:#80ff80; }
+/* 全局区域 */
+.global-section { margin-bottom:24px; }
+.global-toggle { display:flex; align-items:center; gap:8px; padding:10px 16px; background:#141824; border:1px solid #2a2a4a; border-radius:10px; cursor:pointer; transition:all .2s; margin-bottom:8px; }
+.global-toggle:hover { border-color:#3a3a5a; }
+.global-toggle .arrow { color:#888; transition:transform .2s; font-size:12px; }
+.global-toggle.open .arrow { transform:rotate(90deg); }
+.global-toggle .label { color:#aaa; font-size:13px; }
+.global-content { display:none; padding:12px 0; }
+.global-content.show { display:block; }
 
-.tabs { display:flex; gap:0; margin-bottom:20px; border-bottom:2px solid #2a2a4a; }
-.tab { padding:10px 20px; cursor:pointer; color:#888; font-size:14px; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all .2s; }
-.tab.active { color:#c8a2ff; border-bottom-color:#c8a2ff; }
-.tab:hover { color:#c8a2ff; }
-
-.result-area { min-height:300px; }
-
+/* 卡片 */
 .card { background:#141824; border:1px solid #2a2a4a; border-radius:12px; padding:20px; margin-bottom:16px; }
 .card-title { font-size:16px; color:#c8a2ff; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
 .card-title .badge { font-size:11px; padding:2px 8px; border-radius:4px; }
@@ -64,12 +64,6 @@ body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background:#0a
 .translate-box input:focus { border-color:#7c5cbf; }
 .translate-result { background:#1a1e2e; border-radius:8px; padding:16px; font-size:14px; line-height:1.8; }
 
-.dep-arrow { color:#7c5cbf; margin:0 4px; }
-
-.empty-state { text-align:center; padding:60px 20px; color:#666; }
-.empty-state .icon { font-size:48px; margin-bottom:16px; }
-.empty-state p { font-size:14px; line-height:1.8; }
-
 .summary-bar { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
 .summary-item { background:#1a1e2e; border-radius:8px; padding:10px 16px; font-size:13px; }
 .summary-item .num { font-size:20px; font-weight:bold; color:#c8a2ff; }
@@ -81,7 +75,9 @@ body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background:#0a
 .map-arrow { color:#7c5cbf; }
 .map-new { color:#80ff80; min-width:80px; }
 
-/* 文案搜索替换样式 */
+.dep-arrow { color:#7c5cbf; margin:0 4px; }
+
+/* 搜索替换 */
 .search-replace-bar { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
 .search-replace-bar input { flex:1; min-width:120px; padding:10px 14px; background:#1a1e2e; border:1px solid #3a3a5a; border-radius:8px; color:#e0e0e0; font-size:14px; outline:none; }
 .search-replace-bar input:focus { border-color:#7c5cbf; }
@@ -108,9 +104,24 @@ body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background:#0a
 .sr-selected-bar { display:none; position:sticky; bottom:0; background:#1a1e2e; border:1px solid #3a3a5a; border-radius:12px; padding:12px 16px; margin-top:12px; }
 .sr-selected-bar.active { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
 
+/* 操作详情页标题 */
+.op-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #2a2a4a; }
+.op-header h2 { font-size:20px; color:#e0e0e0; }
+.op-header .back-btn { padding:6px 14px; background:#1e2235; border:1px solid #3a3a5a; border-radius:8px; color:#888; font-size:13px; cursor:pointer; transition:all .2s; }
+.op-header .back-btn:hover { border-color:#7c5cbf; color:#c8a2ff; }
+.op-header .desc { color:#888; font-size:13px; }
+
+/* 依赖查询内联 */
+.dep-inline-select { width:100%; padding:10px; background:#1a1e2e; border:1px solid #3a3a5a; border-radius:8px; color:#e0e0e0; font-size:14px; outline:none; margin-bottom:12px; }
+
+/* 区域分隔标签 */
+.section-label { font-size:13px; color:#666; padding:8px 0 4px; text-transform:uppercase; letter-spacing:2px; border-bottom:1px solid #1e2235; margin-bottom:12px; margin-top:8px; }
+
 @media(max-width:600px) {
   .header h1 { font-size:18px; }
   .main { padding:16px 12px; }
+  .op-btns { gap:6px; }
+  .op-btn { padding:8px 14px; font-size:13px; }
   .chain-step { flex-wrap:wrap; }
   .chain-table { min-width:auto; }
   .search-replace-bar { flex-direction:column; }
@@ -121,42 +132,43 @@ body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background:#0a
 <body>
 
 <div class="header">
-  <h1>🔮 灵动仙府 · 配置表导航器</h1>
-  <span>v1.0 · 策划端适配器</span>
+  <h1 onclick="goHome()">🔮 灵动仙府 · 配置表导航器</h1>
+  <span>v2.0 · 策划端适配器</span>
 </div>
 
 <div class="main">
+  <!-- 操作按钮行 -->
+  <div class="op-btns" id="opBtns"></div>
 
-  <div class="search-box">
-    <span class="search-icon">🔍</span>
-    <input id="searchInput" type="text" placeholder="输入修仙概念(灵兽/修士)、操作(加修士/改建筑)、或表名(dinosaur/props)" autocomplete="off">
+  <!-- 全局区域（概念映射 + 资源翻译，默认折叠） -->
+  <div class="global-section">
+    <div class="global-toggle" onclick="toggleGlobal('concept')">
+      <span class="arrow" id="conceptArrow">▶</span>
+      <span class="label">📋 概念映射 — 修仙术语 ↔ 底层表对照（全局）</span>
+    </div>
+    <div class="global-content" id="conceptContent"></div>
   </div>
 
-  <div class="quick-btns" id="quickBtns">
-    <!-- 动态生成 -->
+  <div class="global-section">
+    <div class="global-toggle" onclick="toggleGlobal('translate')">
+      <span class="arrow" id="translateArrow">▶</span>
+      <span class="label">🔤 资源翻译 — 配置表数字 → 修仙术语（全局）</span>
+    </div>
+    <div class="global-content" id="translateContent"></div>
   </div>
 
-  <div class="tabs">
-    <div class="tab active" data-tab="concept">概念映射</div>
-    <div class="tab" data-tab="op">操作指引</div>
-    <div class="tab" data-tab="search">搜索替换</div>
-    <div class="tab" data-tab="translate">资源翻译</div>
-    <div class="tab" data-tab="deps">依赖查询</div>
-    <div class="tab" data-tab="map">对照表</div>
-  </div>
-
-  <div class="result-area" id="resultArea">
-    <div class="empty-state">
-      <div class="icon">📋</div>
-      <p>选择上方标签或输入关键词开始<br>策划说修仙术语，导航器告诉你底层要改什么表</p>
+  <!-- 主内容区 -->
+  <div id="mainContent">
+    <div style="text-align:center;padding:60px 20px;color:#666;">
+      <div style="font-size:48px;margin-bottom:16px;">🎯</div>
+      <p style="font-size:14px;line-height:1.8;">点击上方操作按钮，开始你需要的操作<br>每个操作会展示相关的指引、对照表、依赖和搜索工具</p>
     </div>
   </div>
-
 </div>
 
 <script>
 // ============================================================
-// 映射数据（与mapping.json同步）
+// 数据
 // ============================================================
 const DATA = {
   conceptMap: {
@@ -177,17 +189,14 @@ const DATA = {
     "增益": { bottomTable:"buff", bottomConcept:"增益", idField:"id", links:["buffBasic","buffCharge","buffRes"], status:"green", desc:"125行效果系统，可直接复用" },
     "奖励包": { bottomTable:"dropBag", bottomConcept:"掉落包", idField:"id", links:["dropRandom","dropProps","dropLotteryRandom"], status:"green", desc:"2579行奖励配置，机制可复用" }
   },
-
   resourceMap: {
     "1":{xiu:"灵石",old:"石料"},"2":{xiu:"灵谷",old:"粮食"},"3":{xiu:"灵木",old:"木材"},
     "4":{xiu:"玄铁",old:"铁矿"},"5":{xiu:"灵银",old:"银币"},"6":{xiu:"仙玉",old:"金币"}
   },
-
   buildingMap: {
     "城堡":"主堡","学塔":"科研所","城墙":"护山大阵","医院":"丹房","兵营":"道兵营",
     "集市":"坊市","仓库":"储物阁","酒馆":"仙缘阁","码头":"灵舟渡","巨兽堡垒":"仙兽阁"
   },
-
   renameGuide: {
     _note: "文案改名速查：改某个概念的名字，需要翻哪些表的哪些字段",
     categories: {
@@ -261,43 +270,12 @@ const DATA = {
       }
     }
   },
-
   operations: {
-    "改建筑": {
-      desc:"修改某个建筑的数据",
-      steps:[
-        {table:"building",action:"修改建筑定义(名字/类型/区域)",must:true},
-        {table:"buildingData",action:"修改升级数据(消耗/条件/效果)，按(buildType,level)定位",must:true},
-        {table:"props",action:"检查levelUpConsume引用的道具ID是否有效",must:false,note:"仅消耗变更时"},
-        {table:"buff",action:"检查levelUpEffect引用的buff ID是否有效",must:false,note:"仅效果变更时"},
-        {table:"cloudArea",action:"检查cloudArea引用是否有效",must:false},
-        {table:"innerCityArea",action:"检查area引用是否有效",must:false},
-        {table:"research",action:"检查condition中是否引用了科技前置",must:false},
-        {table:"buildingIcon",action:"更新图标",must:false,note:"仅图标变更时"},
-        {table:"buildingData4Dinosaur",action:"如果是恐龙专属建筑需处理",must:false,note:"换皮后应删除恐龙专属行"},
-        {table:"aliBuildingCost",action:"联盟建筑成本",must:false}
-      ]
-    },
-    "加修士": {
-      desc:"新增一个修士(英雄)",
-      steps:[
-        {table:"heroData",action:"新增行: 品质/定位/4组技能ID/属性展示",must:true},
-        {table:"heroLevelUp",action:"新增N行: 等级经验/属性曲线(按品质模板)",must:true},
-        {table:"heroSkillLevelUp",action:"新增4组技能的升级数据(SLG×2+三消×2)",must:true},
-        {table:"heroEff",action:"技能效果数据",must:true},
-        {table:"heroStarNew",action:"新增升星/渡槂数据(碎片消耗)",must:true},
-        {table:"props",action:"确认碎片道具ID存在(如修士碎片)",must:true,note:"碎片需先在props中创建"},
-        {table:"heroEquipment",action:"新增法器/装备关联",must:false,note:"有装备系统时"},
-        {table:"heroEquipmentSuit",action:"套装效果",must:false},
-        {table:"heroEvolution",action:"进化/飞升数据",must:false},
-        {table:"heroRank",action:"品阶数据",must:false},
-        {table:"heroSelect",action:"选择/招募配置",must:false},
-        {table:"buff",action:"确认技能效果buff ID存在",must:false},
-        {table:"building",action:"确认解锁建筑条件有效",must:false}
-      ]
-    },
     "加灵兽": {
       desc:"新增一个灵兽(恐龙)",
+      relatedConcepts:["灵兽"],
+      relatedMap:{building:"建筑名对照(灵兽专属建筑)",soldier:"兵种名对照(灵兽绑定兵种)",dinosaur:"灵兽/恐龙名对照"},
+      relatedRename:["灵兽/恐龙名"],
       steps:[
         {table:"dinosaur",action:"新增行: 名字/品质/类型/兵种/prefab",must:true},
         {table:"dinosaurLevelUp",action:"新增64行升级数据(消耗/属性/战力)",must:true,note:"通常按模板复制后调整"},
@@ -314,8 +292,50 @@ const DATA = {
         {table:"dinosaurBloodTransfer",action:"血脉转移",must:false}
       ]
     },
+    "加修士": {
+      desc:"新增一个修士(英雄)",
+      relatedConcepts:["修士"],
+      relatedMap:{heroData:"修士/英雄名对照",props:"道具名对照(修士碎片等)",heroEquipment:"法器/装备名对照"},
+      relatedRename:["修士/英雄名"],
+      steps:[
+        {table:"heroData",action:"新增行: 品质/定位/4组技能ID/属性展示",must:true},
+        {table:"heroLevelUp",action:"新增N行: 等级经验/属性曲线(按品质模板)",must:true},
+        {table:"heroSkillLevelUp",action:"新增4组技能的升级数据(SLG×2+三消×2)",must:true},
+        {table:"heroEff",action:"技能效果数据",must:true},
+        {table:"heroStarNew",action:"新增升星/渡槂数据(碎片消耗)",must:true},
+        {table:"props",action:"确认碎片道具ID存在(如修士碎片)",must:true,note:"碎片需先在props中创建"},
+        {table:"heroEquipment",action:"新增法器/装备关联",must:false,note:"有装备系统时"},
+        {table:"heroEquipmentSuit",action:"套装效果",must:false},
+        {table:"heroEvolution",action:"进化/飞升数据",must:false},
+        {table:"heroRank",action:"品阶数据",must:false},
+        {table:"heroSelect",action:"选择/招募配置",must:false},
+        {table:"buff",action:"确认技能效果buff ID存在",must:false},
+        {table:"building",action:"确认解锁建筑条件有效",must:false}
+      ]
+    },
+    "改建筑": {
+      desc:"修改某个建筑的数据",
+      relatedConcepts:["建筑"],
+      relatedMap:{building:"建筑名对照表",buildingData:"建筑升级描述"},
+      relatedRename:["建筑名"],
+      steps:[
+        {table:"building",action:"修改建筑定义(名字/类型/区域)",must:true},
+        {table:"buildingData",action:"修改升级数据(消耗/条件/效果)，按(buildType,level)定位",must:true},
+        {table:"props",action:"检查levelUpConsume引用的道具ID是否有效",must:false,note:"仅消耗变更时"},
+        {table:"buff",action:"检查levelUpEffect引用的buff ID是否有效",must:false,note:"仅效果变更时"},
+        {table:"cloudArea",action:"检查cloudArea引用是否有效",must:false},
+        {table:"innerCityArea",action:"检查area引用是否有效",must:false},
+        {table:"research",action:"检查condition中是否引用了科技前置",must:false},
+        {table:"buildingIcon",action:"更新图标",must:false,note:"仅图标变更时"},
+        {table:"buildingData4Dinosaur",action:"如果是恐龙专属建筑需处理",must:false,note:"换皮后应删除恐龙专属行"},
+        {table:"aliBuildingCost",action:"联盟建筑成本",must:false}
+      ]
+    },
     "改功法": {
       desc:"修改一个科技/功法",
+      relatedConcepts:["功法"],
+      relatedMap:{research:"功法/科技名对照"},
+      relatedRename:["功法/科技名"],
       steps:[
         {table:"research",action:"修改科技数据(名/消耗/效果/前置)",must:true},
         {table:"researchForm",action:"检查科技树结构",must:false,note:"树结构变更时"},
@@ -326,8 +346,19 @@ const DATA = {
         {table:"allianceTechnology",action:"检查是否有联盟灵术前置=此科技",must:false,note:"⚠️反向影响"}
       ]
     },
+    "改文案": {
+      desc:"搜索并替换配置表中的文字内容",
+      relatedConcepts:[],
+      relatedMap:{},
+      relatedRename:null, // null = 显示全部改名类别
+      hasSearchReplace:true,
+      steps:[]
+    },
     "配活动奖励": {
       desc:"配置一个活动的奖励",
+      relatedConcepts:["奖励包","道具"],
+      relatedMap:{dropBag:"掉落包对照",props:"道具名对照"},
+      relatedRename:["道具名"],
       steps:[
         {table:"activityTypes",action:"确认活动类型",must:true},
         {table:"activity",action:"配置活跃度/基础参数",must:true},
@@ -345,6 +376,9 @@ const DATA = {
     },
     "改掌门天赋": {
       desc:"修改领主/掌门天赋",
+      relatedConcepts:["掌门"],
+      relatedMap:{lordTalent:"掌门/领主天赋名对照"},
+      relatedRename:["掌门天赋名"],
       steps:[
         {table:"lordTalent",action:"修改天赋数据(952行)",must:true},
         {table:"lordTalentForm",action:"天赋结构",must:false},
@@ -359,402 +393,6 @@ const DATA = {
   }
 };
 
-// ============================================================
-// 渲染函数
-// ============================================================
-const $ = id => document.getElementById(id);
-
-function statusBadge(s) {
-  const map = {red:['🔴必改','badge-red'], yellow:['🟡需调','badge-yellow'], green:['🟢可复用','badge-green']};
-  const [text,cls] = map[s] || ['⚪未知',''];
-  return `<span class="badge ${cls}">${text}</span>`;
-}
-
-function renderConceptList() {
-  let html = '<div class="concept-grid">';
-  for (const [name, info] of Object.entries(DATA.conceptMap)) {
-    html += `<div class="concept-item" onclick="showConcept('${name}')">
-      <div class="name">${name} ${statusBadge(info.status)}</div>
-      <div class="bottom">→ ${info.bottomTable}(${info.bottomConcept}) · ${info.links.length}张关联表</div>
-    </div>`;
-  }
-  html += '</div>';
-  $('resultArea').innerHTML = html;
-}
-
-function showConcept(name) {
-  const info = DATA.conceptMap[name];
-  if (!info) return;
-  
-  let mustCount = 0, optCount = 0;
-  // 查找涉及的操作
-  let relatedOps = [];
-  for (const [opName, opInfo] of Object.entries(DATA.operations)) {
-    for (const step of opInfo.steps) {
-      if (step.table === info.bottomTable || info.links.includes(step.table)) {
-        relatedOps.push(opName);
-        break;
-      }
-    }
-  }
-
-  let html = `
-    <div class="card">
-      <div class="card-title">${name} ${statusBadge(info.status)}</div>
-      <div class="summary-bar">
-        <div class="summary-item"><div class="num">${info.bottomTable}</div><div class="label">底层表名</div></div>
-        <div class="summary-item"><div class="num">${info.bottomConcept}</div><div class="label">底层概念</div></div>
-        <div class="summary-item"><div class="num">${info.idField}</div><div class="label">核心ID字段</div></div>
-        <div class="summary-item"><div class="num">${info.links.length}</div><div class="label">关联表数</div></div>
-      </div>
-      <div style="color:#aaa;font-size:13px;margin-top:8px;">${info.desc}</div>
-    </div>
-    <div class="card">
-      <div class="card-title">🔗 关联表链路（策划说"${name}"，底层要碰这些表）</div>`;
-  
-  for (let i = 0; i < info.links.length; i++) {
-    html += `<div class="chain-step">
-      <div class="chain-icon optional">${i+1}</div>
-      <div class="chain-table">${info.links[i]}</div>
-      <div class="chain-action">关联表</div>
-    </div>`;
-  }
-  html += '</div>';
-
-  if (relatedOps.length > 0) {
-    html += `<div class="card">
-      <div class="card-title">📌 涉及的操作场景（点击查看完整链路）</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;">`;
-    for (const op of relatedOps) {
-      html += `<button class="quick-btn" style="padding:8px 16px;background:#1e2235;border:1px solid #3a3a5a;border-radius:8px;color:#c0c0d0;cursor:pointer;" onclick="showOperation('${op}')">${op}</button>`;
-    }
-    html += '</div></div>';
-  }
-
-  $('resultArea').innerHTML = html;
-}
-
-function renderOperationList() {
-  let html = '';
-  for (const [opName, opInfo] of Object.entries(DATA.operations)) {
-    const mustCount = opInfo.steps.filter(s => s.must).length;
-    const totalCount = opInfo.steps.length;
-    html += `<div class="card" style="cursor:pointer;" onclick="showOperation('${opName}')">
-      <div class="card-title">${opName} <span style="font-size:12px;color:#888;font-weight:normal;">${opInfo.desc}</span></div>
-      <div class="summary-bar">
-        <div class="summary-item"><div class="num" style="color:#ff8080;">${mustCount}</div><div class="label">必改表</div></div>
-        <div class="summary-item"><div class="num" style="color:#60a0ff;">${totalCount - mustCount}</div><div class="label">选改表</div></div>
-        <div class="summary-item"><div class="num">${totalCount}</div><div class="label">总步骤</div></div>
-      </div>
-    </div>`;
-  }
-  $('resultArea').innerHTML = html;
-}
-
-function showOperation(opName) {
-  const opInfo = DATA.operations[opName];
-  if (!opInfo) return;
-  
-  const mustSteps = opInfo.steps.filter(s => s.must);
-  const optSteps = opInfo.steps.filter(s => !s.must);
-  
-  let html = `
-    <div class="card">
-      <div class="card-title">${opName}</div>
-      <div style="color:#aaa;font-size:14px;">${opInfo.desc}</div>
-      <div class="summary-bar" style="margin-top:12px;">
-        <div class="summary-item"><div class="num" style="color:#ff8080;">${mustSteps.length}</div><div class="label">必改表</div></div>
-        <div class="summary-item"><div class="num" style="color:#60a0ff;">${optSteps.length}</div><div class="label">选改表</div></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">🔴 必改表（不填就跑不通）</div>`;
-  
-  for (let i = 0; i < mustSteps.length; i++) {
-    const s = mustSteps[i];
-    html += `<div class="chain-step">
-      <div class="chain-icon must">${i+1}</div>
-      <div class="chain-table">${s.table}</div>
-      <div class="chain-action">${s.action}${s.note ? `<div class="chain-note">💡 ${s.note}</div>` : ''}</div>
-    </div>`;
-  }
-  html += '</div>';
-
-  if (optSteps.length > 0) {
-    html += `<div class="card">
-      <div class="card-title">⚪ 选改表（按需配置）</div>`;
-    for (let i = 0; i < optSteps.length; i++) {
-      const s = optSteps[i];
-      html += `<div class="chain-step">
-        <div class="chain-icon optional">${i+1}</div>
-        <div class="chain-table">${s.table}</div>
-        <div class="chain-action">${s.action}${s.note ? `<div class="chain-note">💡 ${s.note}</div>` : ''}</div>
-      </div>`;
-    }
-    html += '</div>';
-  }
-
-  $('resultArea').innerHTML = html;
-}
-
-function renderTranslate() {
-  $('resultArea').innerHTML = `
-    <div class="card">
-      <div class="card-title">🔤 资源引用翻译器</div>
-      <div style="color:#aaa;font-size:13px;margin-bottom:12px;">在配置表中看到 "1;0;100" 这种看不懂的数字？粘贴进来，翻译成修仙术语</div>
-      <div class="translate-box">
-        <input id="translateInput" type="text" placeholder='粘贴引用值，如 1;0;100 或多组用|分隔' oninput="doTranslate()">
-      </div>
-      <div id="translateResult" class="translate-result" style="color:#888;">在上方输入框粘贴配置表中的引用值</div>
-    </div>
-    <div class="card">
-      <div class="card-title">📖 资源ID速查表</div>
-      <div class="map-row"><span class="map-old">类型ID</span><span class="map-arrow">→</span><span class="map-new">修仙名(底层名)</span></div>
-      ${Object.entries(DATA.resourceMap).map(([id,m]) => 
-        `<div class="map-row"><span class="map-old">${id}</span><span class="map-arrow">→</span><span class="map-new">${m.xiu}(${m.old})</span></div>`
-      ).join('')}
-    </div>`;
-}
-
-function doTranslate() {
-  const val = $('translateInput').value.trim();
-  if (!val) { $('translateResult').innerHTML = '<span style="color:#888;">在上方输入框粘贴配置表中的引用值</span>'; return; }
-  
-  let results = [];
-  for (const part of val.split('|')) {
-    const p = part.trim().split(';');
-    if (p.length < 3) { results.push(`<span style="color:#ff8080;">❌ "${part}" 格式不符(需3段;分隔)</span>`); continue; }
-    const typeId = p[0].trim(), subType = p[1].trim(), amount = p[2].trim();
-    const resInfo = DATA.resourceMap[typeId];
-    if (resInfo) {
-      results.push(`<span style="color:#80ff80;">✅ ${amount}<strong>${resInfo.xiu}</strong></span> <span style="color:#666;">(底层: ${amount}${resInfo.old}, ID=${typeId})</span>`);
-    } else if (parseInt(typeId) > 6) {
-      results.push(`<span style="color:#ffe060;">⚠️ 类型ID=${typeId} 不在资源表中，可能是道具ID，需查props表确认</span> <span style="color:#666;">数量=${amount}</span>`);
-    } else {
-      results.push(`<span style="color:#ff8080;">❓ 类型ID=${typeId} 未识别</span> <span style="color:#666;">数量=${amount}</span>`);
-    }
-  }
-  $('translateResult').innerHTML = results.join('<br>');
-}
-
-function renderDeps() {
-  // 收集所有表名
-  const allTables = new Set();
-  for (const info of Object.values(DATA.conceptMap)) {
-    allTables.add(info.bottomTable);
-    info.links.forEach(t => allTables.add(t));
-  }
-  for (const opInfo of Object.values(DATA.operations)) {
-    opInfo.steps.forEach(s => allTables.add(s.table));
-  }
-  
-  const sorted = [...allTables].sort();
-  let html = `
-    <div class="card">
-      <div class="card-title">🔗 反向依赖查询</div>
-      <div style="color:#aaa;font-size:13px;margin-bottom:12px;">选一张表，看谁在引用它（改这张表会影响谁）</div>
-      <select id="depSelect" onchange="showDeps()" style="width:100%;padding:10px;background:#1a1e2e;border:1px solid #3a3a5a;border-radius:8px;color:#e0e0e0;font-size:14px;outline:none;">
-        <option value="">-- 选择表名 --</option>
-        ${sorted.map(t => `<option value="${t}">${t}</option>`).join('')}
-      </select>
-    </div>
-    <div id="depResult"></div>`;
-  $('resultArea').innerHTML = html;
-}
-
-function showDeps() {
-  const tableName = $('depSelect').value;
-  if (!tableName) { $('depResult').innerHTML = ''; return; }
-  
-  // 查找哪些概念引用了这张表
-  let referencedBy = [];
-  for (const [concept, info] of Object.entries(DATA.conceptMap)) {
-    if (info.bottomTable === tableName || info.links.includes(tableName)) {
-      referencedBy.push({concept, table:info.bottomTable, isCore: info.bottomTable === tableName});
-    }
-  }
-  
-  // 查找哪些操作引用了这张表
-  let opRefs = [];
-  for (const [opName, opInfo] of Object.entries(DATA.operations)) {
-    for (const step of opInfo.steps) {
-      if (step.table === tableName) {
-        opRefs.push({op:opName, action:step.action, must:step.must});
-      }
-    }
-  }
-  
-  let html = '';
-  if (referencedBy.length > 0) {
-    html += `<div class="card"><div class="card-title">📌 被以下概念引用</div>`;
-    for (const ref of referencedBy) {
-      const tag = ref.isCore ? '🔴核心表' : '⚪关联表';
-      html += `<div class="chain-step">
-        <div class="chain-icon ${ref.isCore?'must':'optional'}">${ref.isCore?'★':'→'}</div>
-        <div class="chain-table">${ref.concept}</div>
-        <div class="chain-action">底层表: ${ref.table} ${tag}</div>
-      </div>`;
-    }
-    html += '</div>';
-  }
-  
-  if (opRefs.length > 0) {
-    html += `<div class="card"><div class="card-title">⚠️ 出现在以下操作中</div>`;
-    for (const ref of opRefs) {
-      html += `<div class="chain-step">
-        <div class="chain-icon ${ref.must?'must':'optional'}">${ref.must?'必':'选'}</div>
-        <div class="chain-table" style="cursor:pointer;color:#c8a2ff;" onclick="showOperation('${ref.op}')">${ref.op}</div>
-        <div class="chain-action">${ref.action}</div>
-      </div>`;
-    }
-    html += '</div>';
-  }
-  
-  if (!referencedBy.length && !opRefs.length) {
-    html = '<div class="card" style="text-align:center;color:#888;padding:40px;">该表暂未被记录在映射关系中</div>';
-  }
-  
-  $('depResult').innerHTML = html;
-}
-
-function renderMap() {
-  let html = `
-    <div class="card">
-      <div class="card-title">🏠 建筑名对照表</div>
-      <div class="map-row"><span class="map-old" style="font-weight:bold;">底层名</span><span class="map-arrow"></span><span class="map-new" style="font-weight:bold;">修仙名</span></div>
-      ${Object.entries(DATA.buildingMap).map(([old,new_]) => 
-        `<div class="map-row"><span class="map-old">${old}</span><span class="map-arrow">→</span><span class="map-new">${new_}</span></div>`
-      ).join('')}
-    </div>
-    <div class="card">
-      <div class="card-title">💎 资源ID对照表</div>
-      <div class="map-row"><span class="map-old" style="font-weight:bold;">ID</span><span class="map-arrow"></span><span class="map-new" style="font-weight:bold;">修仙名(底层名)</span></div>
-      ${Object.entries(DATA.resourceMap).map(([id,m]) => 
-        `<div class="map-row"><span class="map-old">${id}</span><span class="map-arrow">→</span><span class="map-new">${m.xiu}(${m.old})</span></div>`
-      ).join('')}
-    </div>`;
-  $('resultArea').innerHTML = html;
-}
-
-// ============================================================
-// Tab切换
-// ============================================================
-function renderRename() {
-  const cats = DATA.renameGuide.categories;
-  let html = `
-    <div class="card">
-      <div class="card-title">✏️ 文案改名速查</div>
-      <div style="color:#aaa;font-size:13px;margin-bottom:16px;">文案策划要改某个名字？选一个类别，立刻知道要翻哪些表的哪些字段</div>
-    </div>`;
-  
-  for (const [catName, catInfo] of Object.entries(cats)) {
-    const mustCount = catInfo.tables.filter(t => t.priority.includes('必改')).length;
-    const totalCount = catInfo.tables.length;
-    html += `
-    <div class="card">
-      <div class="card-title">${catName} <span style="font-size:12px;color:#888;">${mustCount}个必改 · ${totalCount}个表</span></div>`;
-    
-    for (const t of catInfo.tables) {
-      const isMust = t.priority.includes('必改');
-      html += `
-      <div class="chain-step">
-        <div class="chain-icon ${isMust?'must':'optional'}">${isMust?'必':'选'}</div>
-        <div class="chain-table">${t.table}${t.sheet && t.sheet!=='Sheet1'?' ['+t.sheet+']':''}</div>
-        <div class="chain-action">
-          <div>${t.desc}</div>
-          <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">
-            ${t.fields.map(f => `<span style="background:#1e2235;padding:2px 8px;border-radius:4px;font-size:12px;color:#c8a2ff;">${f}</span>`).join('')}
-          </div>
-        </div>
-      </div>`;
-    }
-    html += '</div>';
-  }
-  
-  $('resultArea').innerHTML = html;
-}
-
-const tabRenders = { concept:renderConceptList, op:renderOperationList, search:renderSearchReplace, translate:renderTranslate, deps:renderDeps, map:renderMap };
-let currentTab = 'concept';
-
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', function() {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    this.classList.add('active');
-    currentTab = this.dataset.tab;
-    tabRenders[currentTab]();
-  });
-});
-
-// ============================================================
-// 搜索
-// ============================================================
-$('searchInput').addEventListener('input', function() {
-  const q = this.value.trim().toLowerCase();
-  if (!q) { tabRenders[currentTab](); return; }
-  
-  // 搜索概念
-  for (const [name, info] of Object.entries(DATA.conceptMap)) {
-    if (name.includes(q) || info.bottomTable.toLowerCase().includes(q) || info.bottomConcept.includes(q)) {
-      showConcept(name);
-      return;
-    }
-  }
-  
-  // 搜索操作
-  for (const [opName, opInfo] of Object.entries(DATA.operations)) {
-    if (opName.includes(q) || opInfo.desc.includes(q)) {
-      showOperation(opName);
-      return;
-    }
-  }
-  
-  // 搜索改名类别
-  for (const catName of Object.keys(DATA.renameGuide.categories)) {
-    if (catName.includes(q)) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      currentTab = 'rename';
-      renderRename();
-      // 滚动到对应卡片
-      setTimeout(() => {
-        const cards = document.querySelectorAll('.card');
-        for (const card of cards) {
-          if (card.textContent.includes(catName)) {
-            card.scrollIntoView({behavior:'smooth', block:'center'});
-            card.style.boxShadow = '0 0 0 2px #c8a2ff';
-            setTimeout(() => card.style.boxShadow = '', 3000);
-            break;
-          }
-        }
-      }, 100);
-      return;
-    }
-  }
-  
-  // 搜索表名
-  for (const [name, info] of Object.entries(DATA.conceptMap)) {
-    if (info.bottomTable.toLowerCase().includes(q)) {
-      showConcept(name);
-      return;
-    }
-    for (const link of info.links) {
-      if (link.toLowerCase().includes(q)) {
-        showConcept(name);
-        return;
-      }
-    }
-  }
-});
-
-// ============================================================
-// 文案搜索替换
-// ============================================================
-let textData = null;   // 延迟加载的文本索引
-let srResults = [];    // 搜索结果
-let srSelected = {};   // 勾选项
-let srReplaceText = ''; // 替换文本
-
-// 表名中文对照
 const TABLE_CN = {
   allianceTechnology:'联盟灵术', buff:'增益', building:'建筑', buildingData:'建筑升级',
   dinosaur:'灵兽/恐龙', dragon:'龙', heroEquipment:'法器/装备', lordTalent:'掌门天赋',
@@ -762,6 +400,373 @@ const TABLE_CN = {
   allianceLevel:'联盟等级', activity:'活动', dropBag:'掉落包', heroData:'修士/英雄',
   heroLevelUp:'修士升级', heroStarNew:'修士升星', dinosaurLevelUp:'灵兽升级', basic:'基础'
 };
+
+const $ = id => document.getElementById(id);
+let currentOp = null;
+
+// ============================================================
+// 操作按钮初始化
+// ============================================================
+function initOpBtns() {
+  var btns = [
+    {label:'加灵兽', op:'加灵兽', cls:'red'},
+    {label:'加修士', op:'加修士', cls:'red'},
+    {label:'改建筑', op:'改建筑', cls:'yellow'},
+    {label:'改功法', op:'改功法', cls:'yellow'},
+    {label:'改文案', op:'改文案', cls:'green'},
+    {label:'配活动奖励', op:'配活动奖励', cls:'yellow'},
+    {label:'改掌门天赋', op:'改掌门天赋', cls:'red'},
+  ];
+  var container = $('opBtns');
+  for (var i = 0; i < btns.length; i++) {
+    var b = btns[i];
+    var btn = document.createElement('button');
+    btn.className = 'op-btn ' + b.cls;
+    btn.textContent = b.label;
+    btn.setAttribute('data-op', b.op);
+    btn.onclick = (function(op) { return function() { showOp(op); }; })(b.op);
+    container.appendChild(btn);
+  }
+}
+
+function setActiveBtn(op) {
+  var btns = document.querySelectorAll('.op-btn');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.toggle('active', btns[i].getAttribute('data-op') === op);
+  }
+}
+
+// ============================================================
+// 全局区域：概念映射
+// ============================================================
+function toggleGlobal(name) {
+  var content = $(name + 'Content');
+  var arrow = $(name + 'Arrow');
+  var toggle = content.previousElementSibling;
+  if (content.classList.contains('show')) {
+    content.classList.remove('show');
+    toggle.classList.remove('open');
+  } else {
+    if (!content.innerHTML) {
+      if (name === 'concept') renderConceptGlobal(content);
+      if (name === 'translate') renderTranslateGlobal(content);
+    }
+    content.classList.add('show');
+    toggle.classList.add('open');
+  }
+}
+
+function renderConceptGlobal(el) {
+  var html = '<div class="concept-grid">';
+  for (var name in DATA.conceptMap) {
+    var info = DATA.conceptMap[name];
+    var badge = statusBadge(info.status);
+    html += '<div class="concept-item" onclick="goConcept(\'' + name + '\')">';
+    html += '<div class="name">' + name + ' ' + badge + '</div>';
+    html += '<div class="bottom">→ ' + info.bottomTable + '(' + info.bottomConcept + ') · ' + info.links.length + '张关联表</div>';
+    html += '</div>';
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function goConcept(name) {
+  var info = DATA.conceptMap[name];
+  if (!info) return;
+  // 滚到主内容区
+  $('mainContent').scrollIntoView({behavior:'smooth'});
+  // 显示概念详情
+  showConceptDetail(name);
+}
+
+function showConceptDetail(name) {
+  var info = DATA.conceptMap[name];
+  var html = '<div class="card">';
+  html += '<div class="card-title">' + name + ' ' + statusBadge(info.status) + '</div>';
+  html += '<div style="color:#aaa;font-size:13px;margin-bottom:12px;">' + info.desc + '</div>';
+  html += '<div class="summary-bar">';
+  html += '<div class="summary-item"><div class="num">' + info.bottomTable + '</div><div class="label">底层表</div></div>';
+  html += '<div class="summary-item"><div class="num">' + info.bottomConcept + '</div><div class="label">底层概念</div></div>';
+  html += '<div class="summary-item"><div class="num">' + info.links.length + '</div><div class="label">关联表</div></div>';
+  html += '</div></div>';
+
+  html += '<div class="card"><div class="card-title">📎 关联表清单</div>';
+  for (var i = 0; i < info.links.length; i++) {
+    html += '<div class="chain-step">';
+    html += '<div class="chain-icon optional">' + (i+1) + '</div>';
+    html += '<div class="chain-table">' + info.links[i] + '</div>';
+    html += '<div class="chain-action">' + (TABLE_CN[info.links[i]] || '关联表') + '</div>';
+    html += '</div>';
+  }
+  html += '</div>';
+  $('mainContent').innerHTML = html;
+}
+
+function renderTranslateGlobal(el) {
+  var html = '<div class="card">';
+  html += '<div class="card-title">🔤 资源引用翻译器</div>';
+  html += '<div style="color:#aaa;font-size:13px;margin-bottom:12px;">在配置表中看到 "1;0;100" 这种看不懂的数字？粘贴进来，翻译成修仙术语</div>';
+  html += '<div class="translate-box">';
+  html += '<input id="translateInput" type="text" placeholder="粘贴引用值，如 1;0;100 或多组用|分隔" oninput="doTranslate()">';
+  html += '</div>';
+  html += '<div id="translateResult" class="translate-result" style="color:#888;">在上方输入框粘贴配置表中的引用值</div>';
+  html += '</div>';
+
+  html += '<div class="card"><div class="card-title">📖 资源ID速查表</div>';
+  html += '<div class="map-row"><span class="map-old" style="font-weight:bold;">类型ID</span><span class="map-arrow"></span><span class="map-new" style="font-weight:bold;">修仙名(底层名)</span></div>';
+  for (var id in DATA.resourceMap) {
+    var m = DATA.resourceMap[id];
+    html += '<div class="map-row"><span class="map-old">' + id + '</span><span class="map-arrow">→</span><span class="map-new">' + m.xiu + '(' + m.old + ')</span></div>';
+  }
+  html += '</div>';
+
+  html += '<div class="card"><div class="card-title">🏠 建筑名对照表</div>';
+  html += '<div class="map-row"><span class="map-old" style="font-weight:bold;">底层名</span><span class="map-arrow"></span><span class="map-new" style="font-weight:bold;">修仙名</span></div>';
+  for (var old in DATA.buildingMap) {
+    html += '<div class="map-row"><span class="map-old">' + old + '</span><span class="map-arrow">→</span><span class="map-new">' + DATA.buildingMap[old] + '</span></div>';
+  }
+  html += '</div>';
+
+  el.innerHTML = html;
+}
+
+function doTranslate() {
+  var val = $('translateInput').value.trim();
+  if (!val) { $('translateResult').innerHTML = '<span style="color:#888;">在上方输入框粘贴配置表中的引用值</span>'; return; }
+  var results = [];
+  var parts = val.split('|');
+  for (var pi = 0; pi < parts.length; pi++) {
+    var p = parts[pi].trim().split(';');
+    if (p.length < 3) { results.push('<span style="color:#ff8080;">❌ "' + parts[pi] + '" 格式不符(需3段;分隔)</span>'); continue; }
+    var typeId = p[0].trim(), amount = p[2].trim();
+    var resInfo = DATA.resourceMap[typeId];
+    if (resInfo) {
+      results.push('<span style="color:#80ff80;">✅ ' + amount + '<strong>' + resInfo.xiu + '</strong></span> <span style="color:#666;">(底层: ' + amount + resInfo.old + ', ID=' + typeId + ')</span>');
+    } else if (parseInt(typeId) > 6) {
+      results.push('<span style="color:#ffe060;">⚠️ 类型ID=' + typeId + ' 不在资源表中，可能是道具ID，需查props表确认</span> <span style="color:#666;">数量=' + amount + '</span>');
+    } else {
+      results.push('<span style="color:#ff8080;">❓ 类型ID=' + typeId + ' 未识别</span> <span style="color:#666;">数量=' + amount + '</span>');
+    }
+  }
+  $('translateResult').innerHTML = results.join('<br>');
+}
+
+// ============================================================
+// 操作详情页
+// ============================================================
+function showOp(op) {
+  currentOp = op;
+  setActiveBtn(op);
+  var opInfo = DATA.operations[op];
+  if (!opInfo) return;
+
+  var html = '';
+
+  // 标题
+  html += '<div class="op-header">';
+  html += '<button class="back-btn" onclick="goHome()">← 返回</button>';
+  html += '<h2>' + op + '</h2>';
+  html += '<span class="desc">' + opInfo.desc + '</span>';
+  html += '</div>';
+
+  // === 操作指引（有步骤的操作才显示） ===
+  if (opInfo.steps && opInfo.steps.length > 0) {
+    var mustSteps = [], optSteps = [];
+    for (var i = 0; i < opInfo.steps.length; i++) {
+      if (opInfo.steps[i].must) mustSteps.push(opInfo.steps[i]);
+      else optSteps.push(opInfo.steps[i]);
+    }
+
+    html += '<div class="section-label">📋 操作指引</div>';
+    if (mustSteps.length > 0) {
+      html += '<div class="card"><div class="card-title">🔴 必改表（不填就跑不通）</div>';
+      for (var i = 0; i < mustSteps.length; i++) {
+        var s = mustSteps[i];
+        html += '<div class="chain-step"><div class="chain-icon must">' + (i+1) + '</div>';
+        html += '<div class="chain-table">' + s.table + '</div>';
+        html += '<div class="chain-action">' + s.action + (s.note ? '<div class="chain-note">💡 ' + s.note + '</div>' : '') + '</div></div>';
+      }
+      html += '</div>';
+    }
+    if (optSteps.length > 0) {
+      html += '<div class="card"><div class="card-title">⚪ 选改表（按需配置）</div>';
+      for (var i = 0; i < optSteps.length; i++) {
+        var s = optSteps[i];
+        html += '<div class="chain-step"><div class="chain-icon optional">' + (i+1) + '</div>';
+        html += '<div class="chain-table">' + s.table + '</div>';
+        html += '<div class="chain-action">' + s.action + (s.note ? '<div class="chain-note">💡 ' + s.note + '</div>' : '') + '</div></div>';
+      }
+      html += '</div>';
+    }
+  }
+
+  // === 对照表（操作相关的映射关系） ===
+  if (opInfo.relatedMap && Object.keys(opInfo.relatedMap).length > 0) {
+    html += '<div class="section-label">📊 对照表</div>';
+    // 建筑名对照
+    if (opInfo.relatedMap.building || opInfo.relatedMap.buildingData) {
+      html += '<div class="card"><div class="card-title">🏠 建筑名对照</div>';
+      html += '<div class="map-row"><span class="map-old" style="font-weight:bold;">底层名</span><span class="map-arrow"></span><span class="map-new" style="font-weight:bold;">修仙名</span></div>';
+      for (var old in DATA.buildingMap) {
+        html += '<div class="map-row"><span class="map-old">' + old + '</span><span class="map-arrow">→</span><span class="map-new">' + DATA.buildingMap[old] + '</span></div>';
+      }
+      html += '</div>';
+    }
+    // 资源ID对照
+    html += '<div class="card"><div class="card-title">💎 资源ID对照</div>';
+    html += '<div class="map-row"><span class="map-old" style="font-weight:bold;">ID</span><span class="map-arrow"></span><span class="map-new" style="font-weight:bold;">修仙名(底层名)</span></div>';
+    for (var id in DATA.resourceMap) {
+      var m = DATA.resourceMap[id];
+      html += '<div class="map-row"><span class="map-old">' + id + '</span><span class="map-arrow">→</span><span class="map-new">' + m.xiu + '(' + m.old + ')</span></div>';
+    }
+    html += '</div>';
+  }
+
+  // === 依赖查询（操作涉及的表的反向依赖） ===
+  if (opInfo.steps && opInfo.steps.length > 0) {
+    html += '<div class="section-label">🔗 依赖查询</div>';
+    // 收集该操作涉及的所有表
+    var opTables = [];
+    for (var i = 0; i < opInfo.steps.length; i++) {
+      var t = opInfo.steps[i].table.replace('*','');
+      if (opTables.indexOf(t) === -1) opTables.push(t);
+    }
+    html += '<div class="card">';
+    html += '<div class="card-title">本操作涉及的表</div>';
+    html += '<div style="color:#aaa;font-size:13px;margin-bottom:12px;">选择一张表，查看谁在引用它（改这张表会影响谁）</div>';
+    html += '<select class="dep-inline-select" onchange="showOpDeps(this.value)"><option value="">-- 选择表名 --</option>';
+    for (var i = 0; i < opTables.length; i++) {
+      html += '<option value="' + opTables[i] + '">' + opTables[i] + ' (' + (TABLE_CN[opTables[i]]||'') + ')</option>';
+    }
+    html += '</select>';
+    html += '<div id="opDepResult"></div>';
+    html += '</div>';
+  }
+
+  // === 改名速查（操作相关类别） ===
+  if (opInfo.relatedRename !== undefined) {
+    var cats = DATA.renameGuide.categories;
+    var showCats = opInfo.relatedRename; // null=全部, array=指定类别
+    html += '<div class="section-label">✏️ 改名速查</div>';
+    html += '<div style="color:#aaa;font-size:13px;margin-bottom:12px;">改这个领域的名字，需要翻哪些表的哪些字段</div>';
+    for (var catName in cats) {
+      if (showCats && showCats.indexOf(catName) === -1) continue;
+      var catInfo = cats[catName];
+      var mustCount = 0;
+      for (var j = 0; j < catInfo.tables.length; j++) {
+        if (catInfo.tables[j].priority.indexOf('必改') !== -1) mustCount++;
+      }
+      html += '<div class="card"><div class="card-title">' + catName + ' <span style="font-size:12px;color:#888;">' + mustCount + '个必改 · ' + catInfo.tables.length + '个表</span></div>';
+      for (var j = 0; j < catInfo.tables.length; j++) {
+        var t = catInfo.tables[j];
+        var isMust = t.priority.indexOf('必改') !== -1;
+        html += '<div class="chain-step">';
+        html += '<div class="chain-icon ' + (isMust?'must':'optional') + '">' + (isMust?'必':'选') + '</div>';
+        html += '<div class="chain-table">' + t.table + (t.sheet && t.sheet !== 'Sheet1' ? ' [' + t.sheet + ']' : '') + '</div>';
+        html += '<div class="chain-action"><div>' + t.desc + '</div><div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">';
+        for (var k = 0; k < t.fields.length; k++) {
+          html += '<span style="background:#1e2235;padding:2px 8px;border-radius:4px;font-size:12px;color:#c8a2ff;">' + t.fields[k] + '</span>';
+        }
+        html += '</div></div></div>';
+      }
+      html += '</div>';
+    }
+  }
+
+  // === 搜索替换（改文案专属） ===
+  if (opInfo.hasSearchReplace) {
+    html += '<div class="section-label">🔍 全局文案搜索替换</div>';
+    html += renderSearchReplaceHTML();
+  }
+
+  $('mainContent').innerHTML = html;
+}
+
+function showOpDeps(tableName) {
+  var el = $('opDepResult');
+  if (!tableName) { el.innerHTML = ''; return; }
+  var referencedBy = [], opRefs = [];
+  for (var concept in DATA.conceptMap) {
+    var info = DATA.conceptMap[concept];
+    if (info.bottomTable === tableName || info.links.indexOf(tableName) !== -1) {
+      referencedBy.push({concept:concept, table:info.bottomTable, isCore: info.bottomTable === tableName});
+    }
+  }
+  for (var opName in DATA.operations) {
+    var opInfo = DATA.operations[opName];
+    if (!opInfo.steps) continue;
+    for (var i = 0; i < opInfo.steps.length; i++) {
+      var s = opInfo.steps[i];
+      if (s.table === tableName || s.table.replace('*','') === tableName) {
+        opRefs.push({op:opName, action:s.action, must:s.must});
+      }
+    }
+  }
+  var html = '';
+  if (referencedBy.length > 0) {
+    html += '<div style="margin-top:8px;color:#aaa;font-size:13px;">📌 被以下概念引用：</div>';
+    for (var i = 0; i < referencedBy.length; i++) {
+      var ref = referencedBy[i];
+      html += '<div class="chain-step"><div class="chain-icon ' + (ref.isCore?'must':'optional') + '">' + (ref.isCore?'★':'→') + '</div>';
+      html += '<div class="chain-table">' + ref.concept + '</div>';
+      html += '<div class="chain-action">底层表: ' + ref.table + ' ' + (ref.isCore?'🔴核心表':'⚪关联表') + '</div></div>';
+    }
+  }
+  if (opRefs.length > 0) {
+    html += '<div style="margin-top:8px;color:#aaa;font-size:13px;">⚠️ 出现在以下操作中：</div>';
+    for (var i = 0; i < opRefs.length; i++) {
+      var ref = opRefs[i];
+      html += '<div class="chain-step"><div class="chain-icon ' + (ref.must?'must':'optional') + '">' + (ref.must?'必':'选') + '</div>';
+      html += '<div class="chain-table">' + ref.op + '</div>';
+      html += '<div class="chain-action">' + ref.action + '</div></div>';
+    }
+  }
+  if (!referencedBy.length && !opRefs.length) {
+    html = '<div style="color:#666;padding:12px;">该表暂未被记录在映射关系中</div>';
+  }
+  el.innerHTML = html;
+}
+
+function goHome() {
+  currentOp = null;
+  setActiveBtn(null);
+  $('mainContent').innerHTML = '<div style="text-align:center;padding:60px 20px;color:#666;"><div style="font-size:48px;margin-bottom:16px;">🎯</div><p style="font-size:14px;line-height:1.8;">点击上方操作按钮，开始你需要的操作<br>每个操作会展示相关的指引、对照表、依赖和搜索工具</p></div>';
+}
+
+// ============================================================
+// 搜索替换
+// ============================================================
+var textData = null;
+var srResults = [];
+var srSelected = {};
+var srReplaceText = '';
+
+function renderSearchReplaceHTML() {
+  var html = '<div class="card">';
+  html += '<div class="card-title">🔍 全局文案搜索替换</div>';
+  html += '<div style="color:#aaa;font-size:13px;margin-bottom:16px;">输入游戏中的文字（如"冥渊冰蟒"），搜索所有配置表中出现的位置，勾选后可预览替换效果</div>';
+  html += '<div class="search-replace-bar">';
+  html += '<input id="srKeyword" type="text" placeholder="搜索关键词，如\"冥渊冰蟒\"\"水龙\"" onkeydown="if(event.key===\'Enter\')doSearch()">';
+  html += '<button class="sr-btn-search" onclick="doSearch()">🔍 搜索</button>';
+  html += '</div>';
+  html += '<div class="search-replace-bar">';
+  html += '<input id="srReplace" type="text" placeholder="替换为（如\"九幽玄鸟\"）" oninput="srReplaceText=this.value">';
+  html += '<button class="sr-btn-replace" onclick="doReplacePreview()">👁 预览替换</button>';
+  html += '<button class="sr-btn-export" onclick="exportReplacePlan()">📋 导出替换方案</button>';
+  html += '</div>';
+  html += '</div>';
+  html += '<div id="srResultArea">';
+  html += '<div style="text-align:center;padding:40px 20px;color:#666;">';
+  html += '<div style="font-size:36px;margin-bottom:12px;">🔍</div>';
+  html += '<p style="font-size:13px;">输入关键词搜索所有配置表的文本内容<br>支持灵兽名、建筑名、道具描述、技能描述等</p>';
+  html += '</div></div>';
+  html += '<div id="srSelectedBar" class="sr-selected-bar">';
+  html += '<span style="color:#c8a2ff;">已选 <strong id="srSelCount">0</strong> 项</span>';
+  html += '<button class="sr-btn-replace" onclick="doReplacePreview()" style="padding:6px 14px;font-size:13px;">预览替换</button>';
+  html += '<button class="sr-btn-export" onclick="exportReplacePlan()" style="padding:6px 14px;font-size:13px;">导出方案</button>';
+  html += '</div>';
+  return html;
+}
 
 function loadTextData(callback) {
   if (textData) { callback(); return; }
@@ -790,45 +795,12 @@ function loadTextData(callback) {
   xhr.send();
 }
 
-function renderSearchReplace() {
-  srResults = [];
-  srSelected = {};
-  $('resultArea').innerHTML = `
-    <div class="card">
-      <div class="card-title">🔍 全局文案搜索替换</div>
-      <div style="color:#aaa;font-size:13px;margin-bottom:16px;">输入游戏中的文字（如"冥渊冰蟒"），搜索所有配置表中出现的位置，勾选后可预览替换效果</div>
-      <div class="search-replace-bar">
-        <input id="srKeyword" type="text" placeholder='搜索关键词，如"冥渊冰蟒""水龙"' onkeydown="if(event.key==='Enter')doSearch()">
-        <button class="sr-btn-search" onclick="doSearch()">🔍 搜索</button>
-      </div>
-      <div class="search-replace-bar">
-        <input id="srReplace" type="text" placeholder='替换为（如"九幽玄鸟"）' oninput="srReplaceText=this.value;previewReplace()">
-        <button class="sr-btn-replace" onclick="doReplacePreview()">👁 预览替换</button>
-        <button class="sr-btn-export" onclick="exportReplacePlan()">📋 导出替换方案</button>
-      </div>
-    </div>
-    <div id="srResultArea">
-      <div class="empty-state">
-        <div class="icon">🔍</div>
-        <p>输入关键词搜索所有配置表的文本内容<br>支持灵兽名、建筑名、道具描述、技能描述等</p>
-      </div>
-    </div>
-    <div id="srSelectedBar" class="sr-selected-bar">
-      <span style="color:#c8a2ff;">已选 <strong id="srSelCount">0</strong> 项</span>
-      <button class="sr-btn-replace" onclick="doReplacePreview()" style="padding:6px 14px;font-size:13px;">预览替换</button>
-      <button class="sr-btn-export" onclick="exportReplacePlan()" style="padding:6px 14px;font-size:13px;">导出方案</button>
-    </div>`;
-}
-
 function doSearch() {
   var keyword = $('srKeyword').value.trim();
   if (!keyword) return;
-  
   loadTextData(function() {
     srResults = [];
     srSelected = {};
-    
-    // 搜索所有表
     for (var table in textData) {
       var entries = textData[table];
       for (var i = 0; i < entries.length; i++) {
@@ -836,55 +808,35 @@ function doSearch() {
         for (var field in entry.f) {
           var val = entry.f[field];
           if (val.indexOf(keyword) !== -1) {
-            srResults.push({
-              table: table,
-              id: entry.i,
-              row: entry.r,
-              sheet: entry.s,
-              field: field,
-              original: val
-            });
+            srResults.push({table:table, id:entry.i, row:entry.r, sheet:entry.s, field:field, original:val});
           }
         }
       }
     }
-    
-    // 按表分组统计
     var tableGroups = {};
     for (var i = 0; i < srResults.length; i++) {
       var t = srResults[i].table;
       if (!tableGroups[t]) tableGroups[t] = 0;
       tableGroups[t]++;
     }
-    
-    var html = '<div class="card">';
-    html += '<div class="sr-stats">';
+    var html = '<div class="card"><div class="sr-stats">';
     html += '<div class="sr-stat">找到 <strong>' + srResults.length + '</strong> 处匹配</div>';
     html += '<div class="sr-stat">涉及 <strong>' + Object.keys(tableGroups).length + '</strong> 张表</div>';
     var tableList = [];
-    for (var t in tableGroups) {
-      tableList.push((TABLE_CN[t]||t) + '(' + tableGroups[t] + ')');
-    }
+    for (var t in tableGroups) { tableList.push((TABLE_CN[t]||t) + '(' + tableGroups[t] + ')'); }
     html += '<div class="sr-stat" style="flex-basis:100%;">分布: ' + tableList.join('、') + '</div>';
-    html += '</div>';
-    html += '</div>';
-    
-    // 结果表格
-    html += '<div class="card" style="overflow-x:auto;">';
-    html += '<table class="sr-result-table">';
+    html += '</div></div>';
+
+    html += '<div class="card" style="overflow-x:auto;"><table class="sr-result-table">';
     html += '<tr><th><input type="checkbox" class="sr-checkbox" onchange="toggleAll(this.checked)"></th><th>表</th><th>ID</th><th>字段</th><th>原文</th></tr>';
-    
     for (var i = 0; i < srResults.length; i++) {
       var r = srResults[i];
       var key = r.table + '|' + r.id + '|' + r.field;
-      srSelected[key] = true;  // 默认全选
-      
-      // 高亮关键词
+      srSelected[key] = true;
       var highlighted = escapeHtml(r.original);
       var kwEsc = escapeHtml(keyword);
       var regex = new RegExp('(' + kwEsc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
       highlighted = highlighted.replace(regex, '<span class="sr-highlight">$1</span>');
-      
       html += '<tr>';
       html += '<td><input type="checkbox" class="sr-checkbox" data-key="' + key + '" checked onchange="toggleItem(\'' + key + '\',this.checked)"></td>';
       html += '<td style="white-space:nowrap;"><strong>' + (TABLE_CN[r.table]||r.table) + '</strong><br><span style="color:#666;font-size:11px;">' + r.table + '.xlsx</span></td>';
@@ -894,7 +846,6 @@ function doSearch() {
       html += '</tr>';
     }
     html += '</table></div>';
-    
     $('srResultArea').innerHTML = html;
     updateSelCount();
   });
@@ -907,10 +858,7 @@ function toggleAll(checked) {
   updateSelCount();
 }
 
-function toggleItem(key, checked) {
-  srSelected[key] = checked;
-  updateSelCount();
-}
+function toggleItem(key, checked) { srSelected[key] = checked; updateSelCount(); }
 
 function updateSelCount() {
   var count = 0;
@@ -921,53 +869,34 @@ function updateSelCount() {
   if (bar) bar.className = 'sr-selected-bar' + (count > 0 ? ' active' : '');
 }
 
-function previewReplace() {
-  // 只更新预览，不弹窗
-}
-
 function doReplacePreview() {
   srReplaceText = $('srReplace') ? $('srReplace').value.trim() : '';
   if (!srReplaceText) { alert('请先输入替换文本'); return; }
-  
-  var keyword = $('srKeyword').value.trim();
+  var keyword = $('srKeyword') ? $('srKeyword').value.trim() : '';
   if (!keyword) return;
-  
   var selectedResults = [];
   for (var i = 0; i < srResults.length; i++) {
     var r = srResults[i];
     var key = r.table + '|' + r.id + '|' + r.field;
     if (srSelected[key]) selectedResults.push(r);
   }
-  
   if (selectedResults.length === 0) { alert('请至少勾选一项'); return; }
-  
-  var html = '<div class="card">';
-  html += '<div class="card-title">👁 替换预览</div>';
+  var html = '<div class="card"><div class="card-title">👁 替换预览</div>';
   html += '<div class="sr-stats"><div class="sr-stat">将 <strong>"' + escapeHtml(keyword) + '"</strong> 替换为 <strong>"' + escapeHtml(srReplaceText) + '"</strong></div>';
-  html += '<div class="sr-stat">共 <strong>' + selectedResults.length + '</strong> 处</div></div>';
-  html += '</div>';
-  
-  html += '<div class="card" style="overflow-x:auto;">';
-  html += '<table class="sr-result-table">';
+  html += '<div class="sr-stat">共 <strong>' + selectedResults.length + '</strong> 处</div></div></div>';
+  html += '<div class="card" style="overflow-x:auto;"><table class="sr-result-table">';
   html += '<tr><th>表</th><th>ID</th><th>字段</th><th>原文 → 替换后</th></tr>';
-  
   for (var i = 0; i < selectedResults.length; i++) {
     var r = selectedResults[i];
     var newVal = r.original.split(keyword).join(srReplaceText);
-    
-    html += '<tr>';
-    html += '<td style="white-space:nowrap;"><strong>' + (TABLE_CN[r.table]||r.table) + '</strong></td>';
+    html += '<tr><td style="white-space:nowrap;"><strong>' + (TABLE_CN[r.table]||r.table) + '</strong></td>';
     html += '<td>' + escapeHtml(r.id) + '</td>';
     html += '<td style="color:#c8a2ff;">' + escapeHtml(r.field) + '</td>';
     html += '<td style="max-width:500px;word-break:break-all;">';
-    html += '<span class="sr-highlight">' + escapeHtml(keyword) + '</span>';
-    html += ' → ';
-    html += '<span class="sr-replace-preview">' + escapeHtml(srReplaceText) + '</span>';
-    html += '<br><span style="color:#666;font-size:12px;">替换后: ' + escapeHtml(newVal) + '</span>';
-    html += '</td></tr>';
+    html += '<span class="sr-highlight">' + escapeHtml(keyword) + '</span> → <span class="sr-replace-preview">' + escapeHtml(srReplaceText) + '</span>';
+    html += '<br><span style="color:#666;font-size:12px;">替换后: ' + escapeHtml(newVal) + '</span></td></tr>';
   }
   html += '</table></div>';
-  
   $('srResultArea').innerHTML = html;
 }
 
@@ -976,17 +905,13 @@ function exportReplacePlan() {
   var keyword = $('srKeyword') ? $('srKeyword').value.trim() : '';
   if (!keyword) { alert('请先搜索关键词'); return; }
   if (!srReplaceText) { alert('请先输入替换文本'); return; }
-  
   var selectedResults = [];
   for (var i = 0; i < srResults.length; i++) {
     var r = srResults[i];
     var key = r.table + '|' + r.id + '|' + r.field;
     if (srSelected[key]) selectedResults.push(r);
   }
-  
   if (selectedResults.length === 0) { alert('请至少勾选一项'); return; }
-  
-  // 生成替换方案文本
   var lines = [];
   lines.push('# 文案替换方案');
   lines.push('生成时间: ' + new Date().toLocaleString());
@@ -996,15 +921,12 @@ function exportReplacePlan() {
   lines.push('替换为: "' + srReplaceText + '"');
   lines.push('');
   lines.push('## 涉及的表和字段');
-  
-  // 按表分组
   var groups = {};
   for (var i = 0; i < selectedResults.length; i++) {
     var r = selectedResults[i];
     if (!groups[r.table]) groups[r.table] = [];
     groups[r.table].push(r);
   }
-  
   for (var table in groups) {
     lines.push('');
     lines.push('### ' + table + '.xlsx (' + (TABLE_CN[table]||'') + ')');
@@ -1019,7 +941,6 @@ function exportReplacePlan() {
       lines.push('');
     }
   }
-  
   lines.push('---');
   lines.push('共 ' + selectedResults.length + ' 处替换，涉及 ' + Object.keys(groups).length + ' 张表');
   lines.push('');
@@ -1028,10 +949,7 @@ function exportReplacePlan() {
   lines.push('2. 按上述方案逐项修改');
   lines.push('3. 修改完成后commit到SVN');
   lines.push('4. 通知程序打表验证');
-  
   var text = lines.join('\n');
-  
-  // 下载为文件
   var blob = new Blob([text], {type:'text/plain;charset=utf-8'});
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
@@ -1041,46 +959,23 @@ function exportReplacePlan() {
   URL.revokeObjectURL(url);
 }
 
+// ============================================================
+// 工具函数
+// ============================================================
+function statusBadge(s) {
+  var map = {red:['🔴必改','badge-red'], yellow:['🟡需调','badge-yellow'], green:['🟢可复用','badge-green']};
+  var item = map[s] || ['⚪未知',''];
+  return '<span class="badge ' + item[1] + '">' + item[0] + '</span>';
+}
+
 function escapeHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ============================================================
-// 快捷按钮
-// ============================================================
-function initQuickBtns() {
-  const btns = [
-    {label:'加灵兽', op:'加灵兽', cls:'red'},
-    {label:'加修士', op:'加修士', cls:'red'},
-    {label:'改建筑', op:'改建筑', cls:'yellow'},
-    {label:'改功法', op:'改功法', cls:'yellow'},
-    {label:'改文案', op:'_rename', cls:'green'},
-    {label:'配活动奖励', op:'配活动奖励', cls:'yellow'},
-    {label:'改掌门天赋', op:'改掌门天赋', cls:'red'},
-  ];
-  const container = $('quickBtns');
-  btns.forEach(b => {
-    const btn = document.createElement('button');
-    btn.className = b.cls;
-    btn.textContent = b.label;
-    btn.onclick = () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      if (b.op === '_rename') {
-        currentTab = 'rename';
-        renderRename();
-      } else {
-        document.querySelector('[data-tab="op"]').classList.add('active');
-        currentTab = 'op';
-        showOperation(b.op);
-      }
-    };
-    container.appendChild(btn);
-  });
-}
-
 // 初始化
-initQuickBtns();
-renderConceptList();
+// ============================================================
+initOpBtns();
 </script>
 </body>
 </html>
