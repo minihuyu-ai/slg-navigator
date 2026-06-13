@@ -25,6 +25,8 @@ body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background:#0a
 .op-btn.yellow:hover,.op-btn.yellow.active { border-color:#a0a040; color:#ffe060; box-shadow:0 0 12px rgba(160,160,64,0.3); }
 .op-btn.green { border-color:#2a4a2a; }
 .op-btn.green:hover,.op-btn.green.active { border-color:#40a040; color:#80ff80; box-shadow:0 0 12px rgba(64,160,64,0.3); }
+.op-btn.cyan { border-color:#2a4a5a; color:#7ab8c8; }
+.op-btn.cyan:hover,.op-btn.cyan.active { border-color:#3a8a9a; color:#a0e8f0; box-shadow:0 0 12px rgba(58,138,154,0.3); }
 
 /* 全局区域 */
 .global-section { margin-bottom:24px; }
@@ -103,6 +105,34 @@ body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background:#0a
 @keyframes spin { to { transform:rotate(360deg); } }
 .sr-selected-bar { display:none; position:sticky; bottom:0; background:#1a1e2e; border:1px solid #3a3a5a; border-radius:12px; padding:12px 16px; margin-top:12px; }
 .sr-selected-bar.active { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+
+/* FGUI查询 */
+.fgui-stats { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+.fgui-stat { background:#1a1e2e; border-radius:8px; padding:10px 16px; font-size:13px; }
+.fgui-stat .num { font-size:20px; font-weight:bold; color:#a0e8f0; }
+.fgui-stat .label { color:#888; margin-top:2px; }
+.fgui-search-bar { display:flex; gap:8px; margin-bottom:16px; }
+.fgui-search-bar input { flex:1; padding:10px 14px; background:#1a1e2e; border:1px solid #3a3a5a; border-radius:8px; color:#e0e0e0; font-size:14px; outline:none; }
+.fgui-search-bar input:focus { border-color:#3a8a9a; }
+.fgui-search-bar button { padding:10px 20px; background:#1a3a4a; border:none; border-radius:8px; color:#a0e8f0; font-size:14px; cursor:pointer; transition:all .2s; }
+.fgui-search-bar button:hover { background:#2a4a5a; }
+.fgui-result-card { background:#1a1e2e; border:1px solid #2a3a4a; border-radius:8px; padding:14px; margin-bottom:8px; cursor:pointer; transition:all .2s; }
+.fgui-result-card:hover { border-color:#3a8a9a; transform:translateY(-1px); }
+.fgui-result-card .fgui-id { font-size:14px; font-weight:bold; color:#a0e8f0; }
+.fgui-result-card .fgui-name { font-size:13px; color:#e0e0e0; margin-left:8px; }
+.fgui-result-card .fgui-pkg { font-size:12px; color:#888; margin-top:4px; }
+.fgui-detail { background:#141824; border:1px solid #2a3a4a; border-radius:12px; padding:20px; margin-bottom:16px; }
+.fgui-ref-list { list-style:none; padding:0; }
+.fgui-ref-list li { padding:6px 10px; border-bottom:1px solid #1e2235; font-size:13px; display:flex; align-items:center; gap:8px; }
+.fgui-ref-list li:last-child { border-bottom:none; }
+.fgui-ref-id { color:#a0e8f0; cursor:pointer; text-decoration:underline; }
+.fgui-ref-id:hover { color:#c0f0ff; }
+.fgui-ref-pkg { color:#888; font-size:12px; }
+.fgui-ref-type { color:#666; font-size:11px; background:#1e2235; padding:2px 6px; border-radius:3px; }
+.fgui-loading { text-align:center; padding:40px; color:#888; }
+.fgui-loading .spinner { display:inline-block; width:24px; height:24px; border:3px solid #2a4a5a; border-top-color:#a0e8f0; border-radius:50%; animation:spin 1s linear infinite; margin-bottom:12px; }
+.fgui-back-btn { padding:6px 14px; background:#1e2235; border:1px solid #3a3a5a; border-radius:8px; color:#888; font-size:13px; cursor:pointer; transition:all .2s; margin-bottom:12px; }
+.fgui-back-btn:hover { border-color:#3a8a9a; color:#a0e8f0; }
 
 /* 操作详情页标题 */
 .op-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #2a2a4a; }
@@ -389,6 +419,13 @@ var DATA = {
         {table:"allianceGift",action:"联盟礼物(如涉及)",must:false},
         {table:"activitySlotDropPool",action:"奖池配置(如涉及)",must:false}
       ]
+    },
+    "查FGUI": {
+      desc:"查询FGUI资源ID引用关系",
+      relatedMap:[],
+      relatedRename:null,
+      hasFgui:true,
+      steps:[]
     }
   }
 };
@@ -451,6 +488,7 @@ function initOpBtns() {
     {label:'建筑', op:'建筑', cls:'yellow'},
     {label:'文案', op:'文案', cls:'green'},
     {label:'活动', op:'活动', cls:'yellow'},
+    {label:'查FGUI', op:'查FGUI', cls:'cyan'},
   ];
   var container = $('opBtns');
   for (var i = 0; i < btns.length; i++) {
@@ -735,6 +773,11 @@ function showOp(op) {
     html += renderSearchReplaceHTML();
   }
 
+  // === FGUI资源查询 ===
+  if (opInfo.hasFgui) {
+    html += renderFguiHTML();
+  }
+
   $('mainContent').innerHTML = html;
 }
 
@@ -1016,6 +1059,270 @@ function exportReplacePlan() {
 }
 
 // ============================================================
+// FGUI资源查询
+// ============================================================
+var fguiComponents = null;
+var fguiRefByTarget = null;
+var fguiRefBySource = null;
+var fguiPkgImages = null;
+var fguiDataLoaded = 0;
+var fguiDataTotal = 4;
+
+function renderFguiHTML() {
+  var html = '';
+  html += '<div class="card">';
+  html += '<div class="card-title" style="color:#a0e8f0;">🧩 FGUI资源引用查询</div>';
+  html += '<div style="color:#aaa;font-size:13px;margin-bottom:16px;">输入FGUI资源ID、组件名或包名，查找谁引用了它、它引用了谁</div>';
+  html += '<div class="fgui-search-bar">';
+  html += '<input id="fguiKeyword" type="text" placeholder="资源ID(如BtnBlank)、组件名或包名(如Alliance)" onkeydown="if(event.key===\'Enter\')fguiSearch()">';
+  html += '<button onclick="fguiSearch()">🔍 查询</button>';
+  html += '</div>';
+  html += '<div class="fgui-stats">';
+  html += '<div class="fgui-stat"><div class="num">5667</div><div class="label">组件资源</div></div>';
+  html += '<div class="fgui-stat"><div class="num">235</div><div class="label">资源包</div></div>';
+  html += '<div class="fgui-stat"><div class="num">35374</div><div class="label">引用关系</div></div>';
+  html += '</div>';
+  html += '</div>';
+  html += '<div id="fguiResultArea">';
+  html += '<div style="text-align:center;padding:40px 20px;color:#666;">';
+  html += '<div style="font-size:36px;margin-bottom:12px;">🧩</div>';
+  html += '<p style="font-size:13px;">输入FGUI资源ID、组件名或包名进行查询<br>点击搜索结果中的ID可追踪引用链</p>';
+  html += '</div></div>';
+  return html;
+}
+
+function fguiLoadData(callback) {
+  if (fguiComponents && fguiRefByTarget && fguiRefBySource && fguiPkgImages) { callback(); return; }
+  var area = $('fguiResultArea');
+  if (area) { area.innerHTML = '<div class="fgui-loading"><div class="spinner"></div><br>正在加载FGUI索引数据(约1.5MB)...</div>'; }
+  var loaded = 0;
+  var needed = 0;
+  if (!fguiComponents) needed++;
+  if (!fguiRefByTarget) needed++;
+  if (!fguiRefBySource) needed++;
+  if (!fguiPkgImages) needed++;
+
+  function check() {
+    loaded++;
+    if (loaded >= needed) callback();
+  }
+
+  if (!fguiComponents) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'fgui/fgui_components.json', true);
+    xhr.timeout = 30000;
+    xhr.onload = function() { if (xhr.status === 200) { try { fguiComponents = JSON.parse(xhr.responseText); } catch(e) { fguiComponents = {}; } } else { fguiComponents = {}; } check(); };
+    xhr.onerror = function() { fguiComponents = {}; check(); };
+    xhr.ontimeout = function() { fguiComponents = {}; check(); };
+    xhr.send();
+  }
+  if (!fguiRefByTarget) {
+    var xhr2 = new XMLHttpRequest();
+    xhr2.open('GET', 'fgui/fgui_refby_target.json', true);
+    xhr2.timeout = 30000;
+    xhr2.onload = function() { if (xhr2.status === 200) { try { fguiRefByTarget = JSON.parse(xhr2.responseText); } catch(e) { fguiRefByTarget = {}; } } else { fguiRefByTarget = {}; } check(); };
+    xhr2.onerror = function() { fguiRefByTarget = {}; check(); };
+    xhr2.ontimeout = function() { fguiRefByTarget = {}; check(); };
+    xhr2.send();
+  }
+  if (!fguiRefBySource) {
+    var xhr3 = new XMLHttpRequest();
+    xhr3.open('GET', 'fgui/fgui_refby_source.json', true);
+    xhr3.timeout = 30000;
+    xhr3.onload = function() { if (xhr3.status === 200) { try { fguiRefBySource = JSON.parse(xhr3.responseText); } catch(e) { fguiRefBySource = {}; } } else { fguiRefBySource = {}; } check(); };
+    xhr3.onerror = function() { fguiRefBySource = {}; check(); };
+    xhr3.ontimeout = function() { fguiRefBySource = {}; check(); };
+    xhr3.send();
+  }
+  if (!fguiPkgImages) {
+    var xhr4 = new XMLHttpRequest();
+    xhr4.open('GET', 'fgui/fgui_pkg_images.json', true);
+    xhr4.timeout = 30000;
+    xhr4.onload = function() { if (xhr4.status === 200) { try { fguiPkgImages = JSON.parse(xhr4.responseText); } catch(e) { fguiPkgImages = {}; } } else { fguiPkgImages = {}; } check(); };
+    xhr4.onerror = function() { fguiPkgImages = {}; check(); };
+    xhr4.ontimeout = function() { fguiPkgImages = {}; check(); };
+    xhr4.send();
+  }
+}
+
+function fguiSearch() {
+  var keyword = $('fguiKeyword').value.trim();
+  if (!keyword) return;
+  fguiLoadData(function() {
+    var results = [];
+    var kw = keyword.toLowerCase();
+
+    // 搜索资源ID和名称
+    for (var id in fguiComponents) {
+      var comp = fguiComponents[id];
+      if (id.toLowerCase().indexOf(kw) !== -1 || comp.n.toLowerCase().indexOf(kw) !== -1 || comp.p.toLowerCase().indexOf(kw) !== -1) {
+        var refByMe = fguiRefBySource[id] || [];
+        var refToMe = fguiRefByTarget[id] || [];
+        results.push({ id: id, name: comp.n, pkg: comp.p, exported: comp.e, refByMe: refByMe.length, refToMe: refToMe.length });
+      }
+      if (results.length >= 50) break;
+    }
+
+    // 搜索包名（如果没有在组件中匹配到足够的）
+    if (results.length < 5 && fguiPkgImages) {
+      var pkgResults = {};
+      for (var id in fguiComponents) {
+        var comp = fguiComponents[id];
+        if (comp.p.toLowerCase().indexOf(kw) !== -1) {
+          if (!pkgResults[comp.p]) pkgResults[comp.p] = { pkg: comp.p, count: 0, images: fguiPkgImages[comp.p] || 0 };
+          pkgResults[comp.p].count++;
+        }
+      }
+      if (Object.keys(pkgResults).length > 0) {
+        var pkgHtml = '<div class="card"><div class="card-title" style="color:#a0e8f0;">📦 包匹配</div>';
+        for (var pkgName in pkgResults) {
+          var pi = pkgResults[pkgName];
+          pkgHtml += '<div class="fgui-result-card" onclick="fguiSearchPkg(\'' + pkgName + '\')">';
+          pkgHtml += '<span class="fgui-name">' + pkgName + '</span>';
+          pkgHtml += '<span style="color:#888;font-size:12px;margin-left:12px;">' + pi.count + '个组件 · ' + pi.images + '张图片</span>';
+          pkgHtml += '</div>';
+        }
+        pkgHtml += '</div>';
+        var area = $('fguiResultArea');
+        if (area) area.innerHTML = pkgHtml;
+        return;
+      }
+    }
+
+    var html = '';
+    html += '<div class="card"><div class="card-title" style="color:#a0e8f0;">🔍 搜索结果</div>';
+    html += '<div style="color:#aaa;font-size:13px;margin-bottom:12px;">找到 <strong style="color:#a0e8f0;">' + results.length + '</strong> 个匹配资源' + (results.length >= 50 ? '（仅显示前50个）' : '') + '</div></div>';
+
+    for (var i = 0; i < results.length; i++) {
+      var r = results[i];
+      html += '<div class="fgui-result-card" onclick="fguiShowDetail(\'' + r.id + '\')">';
+      html += '<span class="fgui-id">' + escapeHtml(r.id) + '</span>';
+      html += '<span class="fgui-name">' + escapeHtml(r.name) + '</span>';
+      if (r.exported) html += '<span style="color:#ffe060;font-size:11px;margin-left:6px;">⚡导出</span>';
+      html += '<div class="fgui-pkg">📦 ' + escapeHtml(r.pkg) + ' · 引用了 ' + r.refByMe + ' 个 · 被引用 ' + r.refToMe + ' 次</div>';
+      html += '</div>';
+    }
+
+    if (results.length === 0) {
+      html += '<div style="text-align:center;padding:30px;color:#666;">未找到匹配的FGUI资源</div>';
+    }
+
+    var area = $('fguiResultArea');
+    if (area) area.innerHTML = html;
+  });
+}
+
+function fguiSearchPkg(pkgName) {
+  fguiLoadData(function() {
+    var results = [];
+    for (var id in fguiComponents) {
+      var comp = fguiComponents[id];
+      if (comp.p === pkgName) {
+        var refByMe = fguiRefBySource[id] || [];
+        var refToMe = fguiRefByTarget[id] || [];
+        results.push({ id: id, name: comp.n, pkg: comp.p, exported: comp.e, refByMe: refByMe.length, refToMe: refToMe.length });
+      }
+    }
+
+    var imgCount = fguiPkgImages ? (fguiPkgImages[pkgName] || 0) : 0;
+    var html = '';
+    html += '<button class="fgui-back-btn" onclick="fguiSearch()">← 返回搜索</button>';
+    html += '<div class="card"><div class="card-title" style="color:#a0e8f0;">📦 ' + escapeHtml(pkgName) + '</div>';
+    html += '<div style="color:#aaa;font-size:13px;">' + results.length + '个组件 · ' + imgCount + '张图片</div></div>';
+
+    for (var i = 0; i < results.length; i++) {
+      var r = results[i];
+      html += '<div class="fgui-result-card" onclick="fguiShowDetail(\'' + r.id + '\')">';
+      html += '<span class="fgui-id">' + escapeHtml(r.id) + '</span>';
+      html += '<span class="fgui-name">' + escapeHtml(r.name) + '</span>';
+      if (r.exported) html += '<span style="color:#ffe060;font-size:11px;margin-left:6px;">⚡导出</span>';
+      html += '<div class="fgui-pkg">引用了 ' + r.refByMe + ' 个 · 被引用 ' + r.refToMe + ' 次</div>';
+      html += '</div>';
+    }
+
+    var area = $('fguiResultArea');
+    if (area) area.innerHTML = html;
+  });
+}
+
+function fguiShowDetail(resId) {
+  fguiLoadData(function() {
+    var comp = fguiComponents[resId];
+    if (!comp) {
+      var area = $('fguiResultArea');
+      if (area) area.innerHTML = '<div style="text-align:center;padding:30px;color:#ff8080;">未找到资源: ' + escapeHtml(resId) + '</div>';
+      return;
+    }
+
+    var refsFrom = fguiRefBySource[resId] || [];
+    var refsTo = fguiRefByTarget[resId] || [];
+
+    var html = '';
+    html += '<button class="fgui-back-btn" onclick="fguiSearch()">← 返回搜索</button>';
+    html += '<div class="fgui-detail">';
+    html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">';
+    html += '<div style="font-size:22px;font-weight:bold;color:#a0e8f0;">' + escapeHtml(resId) + '</div>';
+    html += '<div style="font-size:16px;color:#e0e0e0;">' + escapeHtml(comp.n) + '</div>';
+    if (comp.e) html += '<span style="color:#ffe060;font-size:12px;background:#3a3a1a;padding:2px 8px;border-radius:4px;">⚡导出资源</span>';
+    html += '</div>';
+    html += '<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:#888;margin-bottom:16px;">';
+    html += '<span>📦 包: <strong style="color:#e0e0e0;">' + escapeHtml(comp.p) + '</strong></span>';
+    html += '<span>🔗 路径: <strong style="color:#e0e0e0;">' + escapeHtml(comp.pa) + '</strong></span>';
+    html += '</div>';
+
+    // 被引用统计
+    html += '<div class="fgui-stats">';
+    html += '<div class="fgui-stat"><div class="num">' + refsTo.length + '</div><div class="label">谁引用了我</div></div>';
+    html += '<div class="fgui-stat"><div class="num">' + refsFrom.length + '</div><div class="label">我引用了谁</div></div>';
+    html += '</div>';
+    html += '</div>';
+
+    // 谁引用了我
+    html += '<div class="card"><div class="card-title" style="color:#a0e8f0;">📌 谁引用了我 (' + refsTo.length + ')</div>';
+    if (refsTo.length === 0) {
+      html += '<div style="color:#666;padding:12px;font-size:13px;">暂无其他组件引用此资源</div>';
+    } else {
+      html += '<ul class="fgui-ref-list">';
+      for (var i = 0; i < refsTo.length; i++) {
+        var ref = refsTo[i];
+        var fromComp = fguiComponents[ref.fi] || {};
+        html += '<li>';
+        html += '<span class="fgui-ref-id" onclick="event.stopPropagation();fguiShowDetail(\'' + ref.fi + '\')">' + escapeHtml(ref.fi) + '</span>';
+        html += '<span style="color:#e0e0e0;font-size:13px;">' + escapeHtml(fromComp.n || ref.fn || '') + '</span>';
+        html += '<span class="fgui-ref-pkg">📦 ' + escapeHtml(fromComp.p || ref.fp || '') + '</span>';
+        html += '<span class="fgui-ref-type">' + escapeHtml(ref.rt) + '</span>';
+        html += '</li>';
+      }
+      html += '</ul>';
+    }
+    html += '</div>';
+
+    // 我引用了谁
+    html += '<div class="card"><div class="card-title" style="color:#a0e8f0;">🔗 我引用了谁 (' + refsFrom.length + ')</div>';
+    if (refsFrom.length === 0) {
+      html += '<div style="color:#666;padding:12px;font-size:13px;">此资源未引用其他资源</div>';
+    } else {
+      html += '<ul class="fgui-ref-list">';
+      for (var i = 0; i < refsFrom.length; i++) {
+        var ref = refsFrom[i];
+        var toComp = fguiComponents[ref.ti] || {};
+        html += '<li>';
+        html += '<span class="fgui-ref-id" onclick="event.stopPropagation();fguiShowDetail(\'' + ref.ti + '\')">' + escapeHtml(ref.ti) + '</span>';
+        html += '<span style="color:#e0e0e0;font-size:13px;">' + escapeHtml(toComp.n || '') + '</span>';
+        html += '<span class="fgui-ref-pkg">📦 ' + escapeHtml(toComp.p || ref.tp || '') + '</span>';
+        html += '<span class="fgui-ref-type">' + escapeHtml(ref.rt) + '</span>';
+        html += '</li>';
+      }
+      html += '</ul>';
+    }
+    html += '</div>';
+
+    var area = $('fguiResultArea');
+    if (area) area.innerHTML = html;
+  });
+}
+
+// ============================================================
 // 工具函数
 // ============================================================
 function statusBadge(s) {
@@ -1026,166 +1333,6 @@ function statusBadge(s) {
 
 function escapeHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-
-// ============================================================
-// FGUI资源查询
-// ============================================================
-var fguiComps = null;
-var fguiRefByTarget = null;
-var fguiRefBySource = null;
-var fguiPkgImages = null;
-
-function showFgui() {
-  currentOp = null;
-  setActiveBtn(null);
-  var mc = $('mainContent');
-  mc.innerHTML = '<div class="op-header"><div class="back-btn" onclick="goHome()">← 返回</div><h2>🔍 FGUI资源查询</h2><div class="desc">输入资源ID或名称，查看它是什么、在哪、被谁引用</div></div>'
-    + '<div class="card">'
-    + '<div class="card-title">🔍 资源搜索</div>'
-    + '<div style="color:#aaa;font-size:13px;margin-bottom:16px;">支持输入FGUI资源ID（如ppjkei）或组件名（如BtnBlank）搜索，239个资源包、18662个资源、35374条引用关系</div>'
-    + '<div class="search-replace-bar">'
-    + '<input id="fguiSearchInput" type="text" placeholder="资源ID或名称，如 ppjkei / BtnBlank / Alliance" onkeydown="if(event.key===\'Enter\')doFguiSearch()">'
-    + '<button class="sr-btn-search" onclick="doFguiSearch()">🔍 搜索</button>'
-    + '</div>'
-    + '</div>'
-    + '<div id="fguiResultArea"></div>';
-}
-
-function loadFguiData(callback) {
-  if (fguiComps && fguiRefByTarget && fguiRefBySource) { callback(); return; }
-  var ra = $('fguiResultArea');
-  if (ra) ra.innerHTML = '<div class="sr-loading"><div class="spinner"></div><br>正在加载FGUI索引(约1.5MB)...</div>';
-  var loaded = 0;
-  var total = 3;
-  function check() {
-    loaded++;
-    if (loaded >= total) callback();
-  }
-  var xhrc = new XMLHttpRequest();
-  xhrc.open('GET', 'fgui/fgui_components.json', true);
-  xhrc.timeout = 60000;
-  xhrc.onload = function() { if (xhrc.status===200) try { fguiComps = JSON.parse(xhrc.responseText); } catch(e){fguiComps={}} check(); };
-  xhrc.onerror = function() { check(); };
-  xhrc.ontimeout = function() { check(); };
-  xhrc.send();
-
-  var xhrt = new XMLHttpRequest();
-  xhrt.open('GET', 'fgui/fgui_refby_target.json', true);
-  xhrt.timeout = 60000;
-  xhrt.onload = function() { if (xhrt.status===200) try { fguiRefByTarget = JSON.parse(xhrt.responseText); } catch(e){fguiRefByTarget={}} check(); };
-  xhrt.onerror = function() { check(); };
-  xhrt.ontimeout = function() { check(); };
-  xhrt.send();
-
-  var xhrs = new XMLHttpRequest();
-  xhrs.open('GET', 'fgui/fgui_refby_source.json', true);
-  xhrs.timeout = 60000;
-  xhrs.onload = function() { if (xhrs.status===200) try { fguiRefBySource = JSON.parse(xhrs.responseText); } catch(e){fguiRefBySource={}} check(); };
-  xhrs.onerror = function() { check(); };
-  xhrs.ontimeout = function() { check(); };
-  xhrs.send();
-}
-
-function doFguiSearch() {
-  var keyword = $('fguiSearchInput').value.trim();
-  if (!keyword) return;
-  loadFguiData(function() {
-    var results = [];
-    var kw = keyword.toLowerCase();
-    for (var rid in fguiComps) {
-      var comp = fguiComps[rid];
-      if (rid.toLowerCase().indexOf(kw) !== -1 || comp.n.toLowerCase().indexOf(kw) !== -1 || comp.p.toLowerCase().indexOf(kw) !== -1) {
-        results.push({id: rid, name: comp.n, pkg: comp.p});
-      }
-    }
-    if (results.length === 0) {
-      $('fguiResultArea').innerHTML = '<div class="card"><div style="text-align:center;padding:30px;color:#888;">未找到匹配的资源</div></div>';
-      return;
-    }
-    if (results.length > 200) {
-      results = results.slice(0, 200);
-    }
-    var html = '<div class="card"><div class="card-title">📋 搜索结果 <span class="badge badge-yellow">' + results.length + ' 项</span></div>';
-    html += '<table class="sr-result-table"><tr><th>资源ID</th><th>名称</th><th>资源包</th><th>操作</th></tr>';
-    for (var i = 0; i < results.length; i++) {
-      var r = results[i];
-      html += '<tr>';
-      html += '<td style="font-family:monospace;color:#60a0ff;">' + escapeHtml(r.id) + '</td>';
-      html += '<td>' + escapeHtml(r.name) + '</td>';
-      html += '<td style="color:#aaa;">' + escapeHtml(r.pkg) + '</td>';
-      html += '<td><button onclick="showFguiDetail(\'' + r.id + '\')" style="padding:4px 12px;background:#3a1a5a;border:none;border-radius:4px;color:#c8a2ff;cursor:pointer;font-size:12px;">查看详情</button></td>';
-      html += '</tr>';
-    }
-    html += '</table></div>';
-    $('fguiResultArea').innerHTML = html;
-  });
-}
-
-function showFguiDetail(rid) {
-  if (!fguiComps || !fguiComps[rid]) {
-    $('fguiResultArea').innerHTML = '<div class="card"><div style="color:#ff8080;padding:20px;">资源 ' + escapeHtml(rid) + ' 未找到</div></div>';
-    return;
-  }
-  var comp = fguiComps[rid];
-  var html = '<div class="op-header"><div class="back-btn" onclick="showFgui()">← 返回搜索</div><h2>' + escapeHtml(comp.name) + '</h2><div class="desc">资源包: ' + escapeHtml(comp.pkg) + ' | ID: ' + escapeHtml(rid) + '</div></div>';
-
-  // 基本信息
-  html += '<div class="card"><div class="card-title">📌 基本信息</div>';
-  html += '<div class="summary-bar">';
-  html += '<div class="summary-item"><div class="num">' + escapeHtml(rid) + '</div><div class="label">资源ID</div></div>';
-  html += '<div class="summary-item"><div class="num">' + escapeHtml(comp.name) + '</div><div class="label">组件名</div></div>';
-  html += '<div class="summary-item"><div class="num">' + escapeHtml(comp.pkg) + '</div><div class="label">资源包</div></div>';
-  html += '</div></div>';
-
-  // 被谁引用（反向引用）
-  var refByTarget = fguiRefByTarget && fguiRefByTarget[rid] ? fguiRefByTarget[rid] : [];
-  html += '<div class="card"><div class="card-title">📥 被引用 <span class="badge badge-red">' + refByTarget.length + ' 处</span></div>';
-  if (refByTarget.length > 0) {
-    html += '<table class="sr-result-table"><tr><th>引用方ID</th><th>组件名</th><th>资源包</th></tr>';
-    for (var i = 0; i < Math.min(refByTarget.length, 100); i++) {
-      var ref = refByTarget[i];
-      var refComp = fguiComps[ref.fi] || {n: '?', p: '?'};
-      html += '<tr>';
-      html += '<td style="font-family:monospace;color:#60a0ff;cursor:pointer;" onclick="showFguiDetail(\'' + ref.fi + '\')">' + escapeHtml(ref.fi) + '</td>';
-      html += '<td style="cursor:pointer;color:#80ff80;" onclick="showFguiDetail(\'' + ref.fi + '\')">' + escapeHtml(refComp.n) + '</td>';
-      html += '<td style="color:#aaa;">' + escapeHtml(ref.fp) + '</td>';
-      html += '</tr>';
-    }
-    if (refByTarget.length > 100) {
-      html += '<tr><td colspan="3" style="color:#888;text-align:center;">...还有 ' + (refByTarget.length - 100) + ' 处引用</td></tr>';
-    }
-    html += '</table>';
-  } else {
-    html += '<div style="color:#666;padding:12px;">未被其他组件引用</div>';
-  }
-  html += '</div>';
-
-  // 引用了谁（正向引用）
-  var refBySource = fguiRefBySource && fguiRefBySource[rid] ? fguiRefBySource[rid] : [];
-  html += '<div class="card"><div class="card-title">📤 引用了 <span class="badge badge-yellow">' + refBySource.length + ' 个</span></div>';
-  if (refBySource.length > 0) {
-    html += '<table class="sr-result-table"><tr><th>目标ID</th><th>组件名</th><th>资源包</th></tr>';
-    for (var i = 0; i < Math.min(refBySource.length, 100); i++) {
-      var ref = refBySource[i];
-      var refComp = fguiComps[ref.ti] || {n: '?', p: '?'};
-      html += '<tr>';
-      html += '<td style="font-family:monospace;color:#60a0ff;cursor:pointer;" onclick="showFguiDetail(\'' + ref.ti + '\')">' + escapeHtml(ref.ti) + '</td>';
-      html += '<td style="cursor:pointer;color:#80ff80;" onclick="showFguiDetail(\'' + ref.ti + '\')">' + escapeHtml(refComp.n) + '</td>';
-      html += '<td style="color:#aaa;">' + escapeHtml(ref.tp) + '</td>';
-      html += '</tr>';
-    }
-    if (refBySource.length > 100) {
-      html += '<tr><td colspan="3" style="color:#888;text-align:center;">...还有 ' + (refBySource.length - 100) + ' 个引用</td></tr>';
-    }
-    html += '</table>';
-  } else {
-    html += '<div style="color:#666;padding:12px;">未引用其他组件</div>';
-  }
-  html += '</div>';
-
-  $('fguiResultArea').innerHTML = html;
 }
 
 // ============================================================
