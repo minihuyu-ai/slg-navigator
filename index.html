@@ -713,7 +713,6 @@ $('searchInput').addEventListener('input', function() {
   for (const catName of Object.keys(DATA.renameGuide.categories)) {
     if (catName.includes(q)) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelector('[data-tab="rename"]').classList.add('active');
       currentTab = 'rename';
       renderRename();
       // 滚动到对应卡片
