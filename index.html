@@ -110,6 +110,7 @@ body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background:#0a
   <div class="tabs">
     <div class="tab active" data-tab="concept">概念映射</div>
     <div class="tab" data-tab="op">操作指引</div>
+    <div class="tab" data-tab="rename">文案改名</div>
     <div class="tab" data-tab="translate">资源翻译</div>
     <div class="tab" data-tab="deps">依赖查询</div>
     <div class="tab" data-tab="map">对照表</div>
@@ -156,6 +157,80 @@ const DATA = {
   buildingMap: {
     "城堡":"主堡","学塔":"科研所","城墙":"护山大阵","医院":"丹房","兵营":"道兵营",
     "集市":"坊市","仓库":"储物阁","酒馆":"仙缘阁","码头":"灵舟渡","巨兽堡垒":"仙兽阁"
+  },
+
+  renameGuide: {
+    _note: "文案改名速查：改某个概念的名字，需要翻哪些表的哪些字段",
+    categories: {
+      "灵兽/恐龙名": {
+        tables: [
+          {table:"dinosaur", fields:["名字"], sheet:"Sheet1", priority:"🔴必改", desc:"灵兽主表名"},
+          {table:"dinosaur", fields:["获得恐龙界面-特点","获得恐龙界面恐龙身材","获得恐龙界面-恐龙体重"], sheet:"Sheet1", priority:"🟡需改", desc:"灵兽展示文案"},
+          {table:"props", fields:["道具名称","道具描述","来源描述"], sheet:"Sheet1", priority:"🔴必改", desc:"灵兽碎片等道具名"},
+          {table:"dinosaurRankShow", fields:["名字相关"], sheet:"Sheet1", priority:"🟡需改", desc:"排名展示名"},
+          {table:"buildingData4Dinosaur", fields:["名字相关"], sheet:"Sheet1", priority:"🟡需改", desc:"专属建筑关联名"},
+        ]
+      },
+      "修士/英雄名": {
+        tables: [
+          {table:"heroData", fields:["SOS英雄名备注","ED组合名备注","ED人类名备注","英雄正式名字"], sheet:"Sheet3", priority:"🔴必改", desc:"修士名主表"},
+          {table:"props", fields:["道具名称","道具描述"], sheet:"Sheet1", priority:"🔴必改", desc:"修士碎片等道具名"},
+          {table:"heroEquipment", fields:["名称"], sheet:"Sheet1", priority:"🟡需改", desc:"法器名"},
+          {table:"heroEquipmentSuit", fields:["套装名字"], sheet:"Sheet1", priority:"🟡需改", desc:"套装名"},
+        ]
+      },
+      "建筑名": {
+        tables: [
+          {table:"building", fields:["建筑名称","建筑描述","DIY界面描述"], sheet:"Sheet1", priority:"🔴必改", desc:"建筑名主表"},
+          {table:"building", fields:["包装名称","功能介绍","升级效果介绍"], sheet:"Sheet3", priority:"🔴必改", desc:"换皮对照表"},
+          {table:"buildingData", fields:["建筑名","升级效果描述","额外效果描述"], sheet:"Sheet1", priority:"🟡需改", desc:"升级数据中的描述"},
+          {table:"props", fields:["道具名称","道具描述"], sheet:"Sheet1", priority:"🟡需改", desc:"建筑相关道具(加速等)"},
+        ]
+      },
+      "功法/科技名": {
+        tables: [
+          {table:"research", fields:["科技名字","科技名字简写","描述"], sheet:"Sheet1", priority:"🔴必改", desc:"功法名主表"},
+          {table:"research", fields:["科技名字","科技名字简写","描述"], sheet:"科技名称工具表", priority:"🔴必改", desc:"功法名工具表"},
+        ]
+      },
+      "联盟灵术名": {
+        tables: [
+          {table:"allianceTechnology", fields:["灵术标题名字","灵术名字","描述"], sheet:"Sheet1", priority:"🔴必改", desc:"灵术名主表"},
+        ]
+      },
+      "掌门天赋名": {
+        tables: [
+          {table:"lordTalent", fields:["天赋名字","天赋描述"], sheet:"Sheet1", priority:"🔴必改", desc:"天赋名主表"},
+        ]
+      },
+      "兵种名": {
+        tables: [
+          {table:"soldier", fields:["兵种名称","名字","简介"], sheet:"Sheet1", priority:"🔴必改", desc:"兵种名主表"},
+          {table:"soldier", fields:["兵种名称"], sheet:"Sheet3", priority:"🟡需改", desc:"兵种名对照表"},
+        ]
+      },
+      "魔物名": {
+        tables: [
+          {table:"monster", fields:["魔物名称","魔物介绍"], sheet:"Sheet1", priority:"🔴必改", desc:"魔物名主表"},
+        ]
+      },
+      "道具名": {
+        tables: [
+          {table:"props", fields:["道具名称","道具描述","宝箱道具展示描述","来源描述","标题"], sheet:"Sheet1", priority:"🔴必改", desc:"道具名主表(2165行)"},
+          {table:"props", fields:["名称","说明"], sheet:"资源奖励类型", priority:"🔴必改", desc:"资源类型名(灵石/灵谷等)"},
+        ]
+      },
+      "增益名": {
+        tables: [
+          {table:"buff", fields:["大类型名字","小类型名字","描述"], sheet:"Sheet1", priority:"🟡需改", desc:"buff效果名"},
+        ]
+      },
+      "龙名": {
+        tables: [
+          {table:"dragon", fields:["名称"], sheet:"dragon", priority:"🟡需改", desc:"龙名主表"},
+        ]
+      }
+    }
   },
 
   operations: {
@@ -535,7 +610,42 @@ function renderMap() {
 // ============================================================
 // Tab切换
 // ============================================================
-const tabRenders = { concept:renderConceptList, op:renderOperationList, translate:renderTranslate, deps:renderDeps, map:renderMap };
+function renderRename() {
+  const cats = DATA.renameGuide.categories;
+  let html = `
+    <div class="card">
+      <div class="card-title">✏️ 文案改名速查</div>
+      <div style="color:#aaa;font-size:13px;margin-bottom:16px;">文案策划要改某个名字？选一个类别，立刻知道要翻哪些表的哪些字段</div>
+    </div>`;
+  
+  for (const [catName, catInfo] of Object.entries(cats)) {
+    const mustCount = catInfo.tables.filter(t => t.priority.includes('必改')).length;
+    const totalCount = catInfo.tables.length;
+    html += `
+    <div class="card">
+      <div class="card-title">${catName} <span style="font-size:12px;color:#888;">${mustCount}个必改 · ${totalCount}个表</span></div>`;
+    
+    for (const t of catInfo.tables) {
+      const isMust = t.priority.includes('必改');
+      html += `
+      <div class="chain-step">
+        <div class="chain-icon ${isMust?'must':'optional'}">${isMust?'必':'选'}</div>
+        <div class="chain-table">${t.table}${t.sheet && t.sheet!=='Sheet1'?' ['+t.sheet+']':''}</div>
+        <div class="chain-action">
+          <div>${t.desc}</div>
+          <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">
+            ${t.fields.map(f => `<span style="background:#1e2235;padding:2px 8px;border-radius:4px;font-size:12px;color:#c8a2ff;">${f}</span>`).join('')}
+          </div>
+        </div>
+      </div>`;
+    }
+    html += '</div>';
+  }
+  
+  $('resultArea').innerHTML = html;
+}
+
+const tabRenders = { concept:renderConceptList, op:renderOperationList, rename:renderRename, translate:renderTranslate, deps:renderDeps, map:renderMap };
 let currentTab = 'concept';
 
 document.querySelectorAll('.tab').forEach(tab => {
@@ -566,6 +676,29 @@ $('searchInput').addEventListener('input', function() {
   for (const [opName, opInfo] of Object.entries(DATA.operations)) {
     if (opName.includes(q) || opInfo.desc.includes(q)) {
       showOperation(opName);
+      return;
+    }
+  }
+  
+  // 搜索改名类别
+  for (const catName of Object.keys(DATA.renameGuide.categories)) {
+    if (catName.includes(q)) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('[data-tab="rename"]').classList.add('active');
+      currentTab = 'rename';
+      renderRename();
+      // 滚动到对应卡片
+      setTimeout(() => {
+        const cards = document.querySelectorAll('.card');
+        for (const card of cards) {
+          if (card.textContent.includes(catName)) {
+            card.scrollIntoView({behavior:'smooth', block:'center'});
+            card.style.boxShadow = '0 0 0 2px #c8a2ff';
+            setTimeout(() => card.style.boxShadow = '', 3000);
+            break;
+          }
+        }
+      }, 100);
       return;
     }
   }
