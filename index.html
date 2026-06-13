@@ -81,11 +81,40 @@ body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background:#0a
 .map-arrow { color:#7c5cbf; }
 .map-new { color:#80ff80; min-width:80px; }
 
+/* 文案搜索替换样式 */
+.search-replace-bar { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+.search-replace-bar input { flex:1; min-width:120px; padding:10px 14px; background:#1a1e2e; border:1px solid #3a3a5a; border-radius:8px; color:#e0e0e0; font-size:14px; outline:none; }
+.search-replace-bar input:focus { border-color:#7c5cbf; }
+.search-replace-bar button { padding:10px 20px; border:none; border-radius:8px; font-size:14px; cursor:pointer; transition:all .2s; }
+.sr-btn-search { background:#3a1a5a; color:#c8a2ff; }
+.sr-btn-search:hover { background:#4a2a6a; }
+.sr-btn-replace { background:#1a3a1a; color:#80ff80; }
+.sr-btn-replace:hover { background:#2a4a2a; }
+.sr-btn-export { background:#1a2a3a; color:#60a0ff; }
+.sr-btn-export:hover { background:#2a3a4a; }
+.sr-result-table { width:100%; border-collapse:collapse; font-size:13px; }
+.sr-result-table th { text-align:left; padding:8px 10px; background:#1a1e2e; color:#c8a2ff; border-bottom:1px solid #3a3a5a; font-weight:normal; }
+.sr-result-table td { padding:6px 10px; border-bottom:1px solid #1e2235; vertical-align:top; }
+.sr-result-table tr:hover td { background:#1a1e2e; }
+.sr-highlight { background:#5a3a1a; color:#ffe060; padding:1px 3px; border-radius:3px; }
+.sr-replace-preview { background:#1a3a1a; color:#80ff80; padding:1px 3px; border-radius:3px; }
+.sr-checkbox { width:16px; height:16px; cursor:pointer; accent-color:#7c5cbf; }
+.sr-stats { display:flex; gap:16px; margin-bottom:12px; flex-wrap:wrap; }
+.sr-stat { font-size:13px; color:#888; }
+.sr-stat strong { color:#c8a2ff; font-size:16px; }
+.sr-loading { text-align:center; padding:40px; color:#888; }
+.sr-loading .spinner { display:inline-block; width:24px; height:24px; border:3px solid #3a3a5a; border-top-color:#c8a2ff; border-radius:50%; animation:spin 1s linear infinite; margin-bottom:12px; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.sr-selected-bar { display:none; position:sticky; bottom:0; background:#1a1e2e; border:1px solid #3a3a5a; border-radius:12px; padding:12px 16px; margin-top:12px; }
+.sr-selected-bar.active { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+
 @media(max-width:600px) {
   .header h1 { font-size:18px; }
   .main { padding:16px 12px; }
   .chain-step { flex-wrap:wrap; }
   .chain-table { min-width:auto; }
+  .search-replace-bar { flex-direction:column; }
+  .sr-result-table { font-size:11px; }
 }
 </style>
 </head>
@@ -111,6 +140,7 @@ body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background:#0a
     <div class="tab active" data-tab="concept">概念映射</div>
     <div class="tab" data-tab="op">操作指引</div>
     <div class="tab" data-tab="rename">文案改名</div>
+    <div class="tab" data-tab="search">搜索替换</div>
     <div class="tab" data-tab="translate">资源翻译</div>
     <div class="tab" data-tab="deps">依赖查询</div>
     <div class="tab" data-tab="map">对照表</div>
@@ -645,7 +675,7 @@ function renderRename() {
   $('resultArea').innerHTML = html;
 }
 
-const tabRenders = { concept:renderConceptList, op:renderOperationList, rename:renderRename, translate:renderTranslate, deps:renderDeps, map:renderMap };
+const tabRenders = { concept:renderConceptList, op:renderOperationList, rename:renderRename, search:renderSearchReplace, translate:renderTranslate, deps:renderDeps, map:renderMap };
 let currentTab = 'concept';
 
 document.querySelectorAll('.tab').forEach(tab => {
@@ -717,6 +747,295 @@ $('searchInput').addEventListener('input', function() {
     }
   }
 });
+
+// ============================================================
+// 文案搜索替换
+// ============================================================
+let textData = null;   // 延迟加载的文本索引
+let srResults = [];    // 搜索结果
+let srSelected = {};   // 勾选项
+let srReplaceText = ''; // 替换文本
+
+// 表名中文对照
+const TABLE_CN = {
+  allianceTechnology:'联盟灵术', buff:'增益', building:'建筑', buildingData:'建筑升级',
+  dinosaur:'灵兽/恐龙', dragon:'龙', heroEquipment:'法器/装备', lordTalent:'掌门天赋',
+  monster:'魔物', props:'道具', research:'功法/科技', soldier:'兵种',
+  allianceLevel:'联盟等级', activity:'活动', dropBag:'掉落包', heroData:'修士/英雄',
+  heroLevelUp:'修士升级', heroStarNew:'修士升星', dinosaurLevelUp:'灵兽升级', basic:'基础'
+};
+
+function loadTextData(callback) {
+  if (textData) { callback(); return; }
+  $('resultArea').innerHTML = '<div class="sr-loading"><div class="spinner"></div><br>正在加载文本索引...</div>';
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'text_search_data.json', true);
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try { textData = JSON.parse(xhr.responseText); } catch(e) { textData = {}; }
+    } else {
+      textData = {};
+    }
+    callback();
+  };
+  xhr.onerror = function() { textData = {}; callback(); };
+  xhr.send();
+}
+
+function renderSearchReplace() {
+  srResults = [];
+  srSelected = {};
+  $('resultArea').innerHTML = `
+    <div class="card">
+      <div class="card-title">🔍 全局文案搜索替换</div>
+      <div style="color:#aaa;font-size:13px;margin-bottom:16px;">输入游戏中的文字（如"冥渊冰蟒"），搜索所有配置表中出现的位置，勾选后可预览替换效果</div>
+      <div class="search-replace-bar">
+        <input id="srKeyword" type="text" placeholder='搜索关键词，如"冥渊冰蟒""水龙"' onkeydown="if(event.key==='Enter')doSearch()">
+        <button class="sr-btn-search" onclick="doSearch()">🔍 搜索</button>
+      </div>
+      <div class="search-replace-bar">
+        <input id="srReplace" type="text" placeholder='替换为（如"九幽玄鸟"）' oninput="srReplaceText=this.value;previewReplace()">
+        <button class="sr-btn-replace" onclick="doReplacePreview()">👁 预览替换</button>
+        <button class="sr-btn-export" onclick="exportReplacePlan()">📋 导出替换方案</button>
+      </div>
+    </div>
+    <div id="srResultArea">
+      <div class="empty-state">
+        <div class="icon">🔍</div>
+        <p>输入关键词搜索所有配置表的文本内容<br>支持灵兽名、建筑名、道具描述、技能描述等</p>
+      </div>
+    </div>
+    <div id="srSelectedBar" class="sr-selected-bar">
+      <span style="color:#c8a2ff;">已选 <strong id="srSelCount">0</strong> 项</span>
+      <button class="sr-btn-replace" onclick="doReplacePreview()" style="padding:6px 14px;font-size:13px;">预览替换</button>
+      <button class="sr-btn-export" onclick="exportReplacePlan()" style="padding:6px 14px;font-size:13px;">导出方案</button>
+    </div>`;
+}
+
+function doSearch() {
+  var keyword = $('srKeyword').value.trim();
+  if (!keyword) return;
+  
+  loadTextData(function() {
+    srResults = [];
+    srSelected = {};
+    
+    // 搜索所有表
+    for (var table in textData) {
+      var entries = textData[table];
+      for (var i = 0; i < entries.length; i++) {
+        var entry = entries[i];
+        for (var field in entry.f) {
+          var val = entry.f[field];
+          if (val.indexOf(keyword) !== -1) {
+            srResults.push({
+              table: table,
+              id: entry.i,
+              row: entry.r,
+              sheet: entry.s,
+              field: field,
+              original: val
+            });
+          }
+        }
+      }
+    }
+    
+    // 按表分组统计
+    var tableGroups = {};
+    for (var i = 0; i < srResults.length; i++) {
+      var t = srResults[i].table;
+      if (!tableGroups[t]) tableGroups[t] = 0;
+      tableGroups[t]++;
+    }
+    
+    var html = '<div class="card">';
+    html += '<div class="sr-stats">';
+    html += '<div class="sr-stat">找到 <strong>' + srResults.length + '</strong> 处匹配</div>';
+    html += '<div class="sr-stat">涉及 <strong>' + Object.keys(tableGroups).length + '</strong> 张表</div>';
+    var tableList = [];
+    for (var t in tableGroups) {
+      tableList.push((TABLE_CN[t]||t) + '(' + tableGroups[t] + ')');
+    }
+    html += '<div class="sr-stat" style="flex-basis:100%;">分布: ' + tableList.join('、') + '</div>';
+    html += '</div>';
+    html += '</div>';
+    
+    // 结果表格
+    html += '<div class="card" style="overflow-x:auto;">';
+    html += '<table class="sr-result-table">';
+    html += '<tr><th><input type="checkbox" class="sr-checkbox" onchange="toggleAll(this.checked)"></th><th>表</th><th>ID</th><th>字段</th><th>原文</th></tr>';
+    
+    for (var i = 0; i < srResults.length; i++) {
+      var r = srResults[i];
+      var key = r.table + '|' + r.id + '|' + r.field;
+      srSelected[key] = true;  // 默认全选
+      
+      // 高亮关键词
+      var highlighted = escapeHtml(r.original);
+      var kwEsc = escapeHtml(keyword);
+      var regex = new RegExp('(' + kwEsc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+      highlighted = highlighted.replace(regex, '<span class="sr-highlight">$1</span>');
+      
+      html += '<tr>';
+      html += '<td><input type="checkbox" class="sr-checkbox" data-key="' + key + '" checked onchange="toggleItem(\'' + key + '\',this.checked)"></td>';
+      html += '<td style="white-space:nowrap;"><strong>' + (TABLE_CN[r.table]||r.table) + '</strong><br><span style="color:#666;font-size:11px;">' + r.table + '.xlsx</span></td>';
+      html += '<td>' + escapeHtml(r.id) + '</td>';
+      html += '<td style="color:#c8a2ff;">' + escapeHtml(r.field) + '</td>';
+      html += '<td style="max-width:400px;word-break:break-all;">' + highlighted + '</td>';
+      html += '</tr>';
+    }
+    html += '</table></div>';
+    
+    $('srResultArea').innerHTML = html;
+    updateSelCount();
+  });
+}
+
+function toggleAll(checked) {
+  for (var key in srSelected) srSelected[key] = checked;
+  var cbs = document.querySelectorAll('.sr-checkbox[data-key]');
+  for (var i = 0; i < cbs.length; i++) cbs[i].checked = checked;
+  updateSelCount();
+}
+
+function toggleItem(key, checked) {
+  srSelected[key] = checked;
+  updateSelCount();
+}
+
+function updateSelCount() {
+  var count = 0;
+  for (var key in srSelected) { if (srSelected[key]) count++; }
+  var el = $('srSelCount');
+  if (el) el.textContent = count;
+  var bar = $('srSelectedBar');
+  if (bar) bar.className = 'sr-selected-bar' + (count > 0 ? ' active' : '');
+}
+
+function previewReplace() {
+  // 只更新预览，不弹窗
+}
+
+function doReplacePreview() {
+  srReplaceText = $('srReplace') ? $('srReplace').value.trim() : '';
+  if (!srReplaceText) { alert('请先输入替换文本'); return; }
+  
+  var keyword = $('srKeyword').value.trim();
+  if (!keyword) return;
+  
+  var selectedResults = [];
+  for (var i = 0; i < srResults.length; i++) {
+    var r = srResults[i];
+    var key = r.table + '|' + r.id + '|' + r.field;
+    if (srSelected[key]) selectedResults.push(r);
+  }
+  
+  if (selectedResults.length === 0) { alert('请至少勾选一项'); return; }
+  
+  var html = '<div class="card">';
+  html += '<div class="card-title">👁 替换预览</div>';
+  html += '<div class="sr-stats"><div class="sr-stat">将 <strong>"' + escapeHtml(keyword) + '"</strong> 替换为 <strong>"' + escapeHtml(srReplaceText) + '"</strong></div>';
+  html += '<div class="sr-stat">共 <strong>' + selectedResults.length + '</strong> 处</div></div>';
+  html += '</div>';
+  
+  html += '<div class="card" style="overflow-x:auto;">';
+  html += '<table class="sr-result-table">';
+  html += '<tr><th>表</th><th>ID</th><th>字段</th><th>原文 → 替换后</th></tr>';
+  
+  for (var i = 0; i < selectedResults.length; i++) {
+    var r = selectedResults[i];
+    var newVal = r.original.split(keyword).join(srReplaceText);
+    
+    html += '<tr>';
+    html += '<td style="white-space:nowrap;"><strong>' + (TABLE_CN[r.table]||r.table) + '</strong></td>';
+    html += '<td>' + escapeHtml(r.id) + '</td>';
+    html += '<td style="color:#c8a2ff;">' + escapeHtml(r.field) + '</td>';
+    html += '<td style="max-width:500px;word-break:break-all;">';
+    html += '<span class="sr-highlight">' + escapeHtml(keyword) + '</span>';
+    html += ' → ';
+    html += '<span class="sr-replace-preview">' + escapeHtml(srReplaceText) + '</span>';
+    html += '<br><span style="color:#666;font-size:12px;">替换后: ' + escapeHtml(newVal) + '</span>';
+    html += '</td></tr>';
+  }
+  html += '</table></div>';
+  
+  $('srResultArea').innerHTML = html;
+}
+
+function exportReplacePlan() {
+  srReplaceText = $('srReplace') ? $('srReplace').value.trim() : '';
+  var keyword = $('srKeyword') ? $('srKeyword').value.trim() : '';
+  if (!keyword) { alert('请先搜索关键词'); return; }
+  if (!srReplaceText) { alert('请先输入替换文本'); return; }
+  
+  var selectedResults = [];
+  for (var i = 0; i < srResults.length; i++) {
+    var r = srResults[i];
+    var key = r.table + '|' + r.id + '|' + r.field;
+    if (srSelected[key]) selectedResults.push(r);
+  }
+  
+  if (selectedResults.length === 0) { alert('请至少勾选一项'); return; }
+  
+  // 生成替换方案文本
+  var lines = [];
+  lines.push('# 文案替换方案');
+  lines.push('生成时间: ' + new Date().toLocaleString());
+  lines.push('');
+  lines.push('## 替换规则');
+  lines.push('关键词: "' + keyword + '"');
+  lines.push('替换为: "' + srReplaceText + '"');
+  lines.push('');
+  lines.push('## 涉及的表和字段');
+  
+  // 按表分组
+  var groups = {};
+  for (var i = 0; i < selectedResults.length; i++) {
+    var r = selectedResults[i];
+    if (!groups[r.table]) groups[r.table] = [];
+    groups[r.table].push(r);
+  }
+  
+  for (var table in groups) {
+    lines.push('');
+    lines.push('### ' + table + '.xlsx (' + (TABLE_CN[table]||'') + ')');
+    lines.push('');
+    var items = groups[table];
+    for (var i = 0; i < items.length; i++) {
+      var r = items[i];
+      var newVal = r.original.split(keyword).join(srReplaceText);
+      lines.push('| ID=' + r.id + ' | 行=' + r.row + ' | Sheet=' + r.sheet + ' | 字段=' + r.field + ' |');
+      lines.push('| 原文: ' + r.original + ' |');
+      lines.push('| 替换: ' + newVal + ' |');
+      lines.push('');
+    }
+  }
+  
+  lines.push('---');
+  lines.push('共 ' + selectedResults.length + ' 处替换，涉及 ' + Object.keys(groups).length + ' 张表');
+  lines.push('');
+  lines.push('## 操作步骤');
+  lines.push('1. 在SVN中checkout对应的xlsx文件');
+  lines.push('2. 按上述方案逐项修改');
+  lines.push('3. 修改完成后commit到SVN');
+  lines.push('4. 通知程序打表验证');
+  
+  var text = lines.join('\n');
+  
+  // 下载为文件
+  var blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '替换方案_' + keyword + '_→_' + srReplaceText + '.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 // ============================================================
 // 快捷按钮
