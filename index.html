@@ -139,7 +139,6 @@ body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background:#0a
   <div class="tabs">
     <div class="tab active" data-tab="concept">概念映射</div>
     <div class="tab" data-tab="op">操作指引</div>
-    <div class="tab" data-tab="rename">文案改名</div>
     <div class="tab" data-tab="search">搜索替换</div>
     <div class="tab" data-tab="translate">资源翻译</div>
     <div class="tab" data-tab="deps">依赖查询</div>
@@ -675,7 +674,7 @@ function renderRename() {
   $('resultArea').innerHTML = html;
 }
 
-const tabRenders = { concept:renderConceptList, op:renderOperationList, rename:renderRename, search:renderSearchReplace, translate:renderTranslate, deps:renderDeps, map:renderMap };
+const tabRenders = { concept:renderConceptList, op:renderOperationList, search:renderSearchReplace, translate:renderTranslate, deps:renderDeps, map:renderMap };
 let currentTab = 'concept';
 
 document.querySelectorAll('.tab').forEach(tab => {
@@ -714,7 +713,6 @@ $('searchInput').addEventListener('input', function() {
   for (const catName of Object.keys(DATA.renameGuide.categories)) {
     if (catName.includes(q)) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelector('[data-tab="rename"]').classList.add('active');
       currentTab = 'rename';
       renderRename();
       // 滚动到对应卡片
@@ -767,18 +765,28 @@ const TABLE_CN = {
 
 function loadTextData(callback) {
   if (textData) { callback(); return; }
-  $('resultArea').innerHTML = '<div class="sr-loading"><div class="spinner"></div><br>正在加载文本索引...</div>';
+  var srArea = $('srResultArea');
+  if (srArea) { srArea.innerHTML = '<div class="sr-loading"><div class="spinner"></div><br>正在加载文本索引(约1.1MB)...</div>'; }
   var xhr = new XMLHttpRequest();
   xhr.open('GET', 'text_search_data.json', true);
+  xhr.timeout = 30000;
   xhr.onload = function() {
     if (xhr.status === 200) {
-      try { textData = JSON.parse(xhr.responseText); } catch(e) { textData = {}; }
+      try { textData = JSON.parse(xhr.responseText); } catch(e) { textData = {}; alert('文本索引解析失败，请刷新页面重试'); return; }
     } else {
       textData = {};
+      if (srArea) { srArea.innerHTML = '<div style="text-align:center;color:#ff8080;padding:40px;">❌ 文本索引加载失败(HTTP ' + xhr.status + ')，请刷新页面重试</div>'; }
+      return;
     }
     callback();
   };
-  xhr.onerror = function() { textData = {}; callback(); };
+  xhr.onerror = function() {
+    textData = {};
+    if (srArea) { srArea.innerHTML = '<div style="text-align:center;color:#ff8080;padding:40px;">❌ 网络错误，文本索引加载失败，请刷新页面重试</div>'; }
+  };
+  xhr.ontimeout = function() {
+    if (srArea) { srArea.innerHTML = '<div style="text-align:center;color:#ff8080;padding:40px;">❌ 加载超时(30秒)，请检查网络后刷新重试</div>'; }
+  };
   xhr.send();
 }
 
@@ -1046,6 +1054,7 @@ function initQuickBtns() {
     {label:'加修士', op:'加修士', cls:'red'},
     {label:'改建筑', op:'改建筑', cls:'yellow'},
     {label:'改功法', op:'改功法', cls:'yellow'},
+    {label:'改文案', op:'_rename', cls:'green'},
     {label:'配活动奖励', op:'配活动奖励', cls:'yellow'},
     {label:'改掌门天赋', op:'改掌门天赋', cls:'red'},
   ];
@@ -1056,9 +1065,14 @@ function initQuickBtns() {
     btn.textContent = b.label;
     btn.onclick = () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelector('[data-tab="op"]').classList.add('active');
-      currentTab = 'op';
-      showOperation(b.op);
+      if (b.op === '_rename') {
+        currentTab = 'rename';
+        renderRename();
+      } else {
+        document.querySelector('[data-tab="op"]').classList.add('active');
+        currentTab = 'op';
+        showOperation(b.op);
+      }
     };
     container.appendChild(btn);
   });
