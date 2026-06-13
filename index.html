@@ -140,7 +140,7 @@ body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background:#0a
 
 <div class="header">
   <h1 onclick="goHome()">🔮 灵动仙府 · 配置表导航器</h1>
-  <span>v2.1 · 策划端适配器</span>
+  <span>v2.2 · 策划端适配器</span>
 </div>
 
 <div class="main">
@@ -1026,6 +1026,166 @@ function statusBadge(s) {
 
 function escapeHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+
+// ============================================================
+// FGUI资源查询
+// ============================================================
+var fguiComps = null;
+var fguiRefByTarget = null;
+var fguiRefBySource = null;
+var fguiPkgImages = null;
+
+function showFgui() {
+  currentOp = null;
+  setActiveBtn(null);
+  var mc = $('mainContent');
+  mc.innerHTML = '<div class="op-header"><div class="back-btn" onclick="goHome()">← 返回</div><h2>🔍 FGUI资源查询</h2><div class="desc">输入资源ID或名称，查看它是什么、在哪、被谁引用</div></div>'
+    + '<div class="card">'
+    + '<div class="card-title">🔍 资源搜索</div>'
+    + '<div style="color:#aaa;font-size:13px;margin-bottom:16px;">支持输入FGUI资源ID（如ppjkei）或组件名（如BtnBlank）搜索，239个资源包、18662个资源、35374条引用关系</div>'
+    + '<div class="search-replace-bar">'
+    + '<input id="fguiSearchInput" type="text" placeholder="资源ID或名称，如 ppjkei / BtnBlank / Alliance" onkeydown="if(event.key===\'Enter\')doFguiSearch()">'
+    + '<button class="sr-btn-search" onclick="doFguiSearch()">🔍 搜索</button>'
+    + '</div>'
+    + '</div>'
+    + '<div id="fguiResultArea"></div>';
+}
+
+function loadFguiData(callback) {
+  if (fguiComps && fguiRefByTarget && fguiRefBySource) { callback(); return; }
+  var ra = $('fguiResultArea');
+  if (ra) ra.innerHTML = '<div class="sr-loading"><div class="spinner"></div><br>正在加载FGUI索引(约1.5MB)...</div>';
+  var loaded = 0;
+  var total = 3;
+  function check() {
+    loaded++;
+    if (loaded >= total) callback();
+  }
+  var xhrc = new XMLHttpRequest();
+  xhrc.open('GET', 'fgui/fgui_components.json', true);
+  xhrc.timeout = 60000;
+  xhrc.onload = function() { if (xhrc.status===200) try { fguiComps = JSON.parse(xhrc.responseText); } catch(e){fguiComps={}} check(); };
+  xhrc.onerror = function() { check(); };
+  xhrc.ontimeout = function() { check(); };
+  xhrc.send();
+
+  var xhrt = new XMLHttpRequest();
+  xhrt.open('GET', 'fgui/fgui_refby_target.json', true);
+  xhrt.timeout = 60000;
+  xhrt.onload = function() { if (xhrt.status===200) try { fguiRefByTarget = JSON.parse(xhrt.responseText); } catch(e){fguiRefByTarget={}} check(); };
+  xhrt.onerror = function() { check(); };
+  xhrt.ontimeout = function() { check(); };
+  xhrt.send();
+
+  var xhrs = new XMLHttpRequest();
+  xhrs.open('GET', 'fgui/fgui_refby_source.json', true);
+  xhrs.timeout = 60000;
+  xhrs.onload = function() { if (xhrs.status===200) try { fguiRefBySource = JSON.parse(xhrs.responseText); } catch(e){fguiRefBySource={}} check(); };
+  xhrs.onerror = function() { check(); };
+  xhrs.ontimeout = function() { check(); };
+  xhrs.send();
+}
+
+function doFguiSearch() {
+  var keyword = $('fguiSearchInput').value.trim();
+  if (!keyword) return;
+  loadFguiData(function() {
+    var results = [];
+    var kw = keyword.toLowerCase();
+    for (var rid in fguiComps) {
+      var comp = fguiComps[rid];
+      if (rid.toLowerCase().indexOf(kw) !== -1 || comp.n.toLowerCase().indexOf(kw) !== -1 || comp.p.toLowerCase().indexOf(kw) !== -1) {
+        results.push({id: rid, name: comp.n, pkg: comp.p});
+      }
+    }
+    if (results.length === 0) {
+      $('fguiResultArea').innerHTML = '<div class="card"><div style="text-align:center;padding:30px;color:#888;">未找到匹配的资源</div></div>';
+      return;
+    }
+    if (results.length > 200) {
+      results = results.slice(0, 200);
+    }
+    var html = '<div class="card"><div class="card-title">📋 搜索结果 <span class="badge badge-yellow">' + results.length + ' 项</span></div>';
+    html += '<table class="sr-result-table"><tr><th>资源ID</th><th>名称</th><th>资源包</th><th>操作</th></tr>';
+    for (var i = 0; i < results.length; i++) {
+      var r = results[i];
+      html += '<tr>';
+      html += '<td style="font-family:monospace;color:#60a0ff;">' + escapeHtml(r.id) + '</td>';
+      html += '<td>' + escapeHtml(r.name) + '</td>';
+      html += '<td style="color:#aaa;">' + escapeHtml(r.pkg) + '</td>';
+      html += '<td><button onclick="showFguiDetail(\'' + r.id + '\')" style="padding:4px 12px;background:#3a1a5a;border:none;border-radius:4px;color:#c8a2ff;cursor:pointer;font-size:12px;">查看详情</button></td>';
+      html += '</tr>';
+    }
+    html += '</table></div>';
+    $('fguiResultArea').innerHTML = html;
+  });
+}
+
+function showFguiDetail(rid) {
+  if (!fguiComps || !fguiComps[rid]) {
+    $('fguiResultArea').innerHTML = '<div class="card"><div style="color:#ff8080;padding:20px;">资源 ' + escapeHtml(rid) + ' 未找到</div></div>';
+    return;
+  }
+  var comp = fguiComps[rid];
+  var html = '<div class="op-header"><div class="back-btn" onclick="showFgui()">← 返回搜索</div><h2>' + escapeHtml(comp.name) + '</h2><div class="desc">资源包: ' + escapeHtml(comp.pkg) + ' | ID: ' + escapeHtml(rid) + '</div></div>';
+
+  // 基本信息
+  html += '<div class="card"><div class="card-title">📌 基本信息</div>';
+  html += '<div class="summary-bar">';
+  html += '<div class="summary-item"><div class="num">' + escapeHtml(rid) + '</div><div class="label">资源ID</div></div>';
+  html += '<div class="summary-item"><div class="num">' + escapeHtml(comp.name) + '</div><div class="label">组件名</div></div>';
+  html += '<div class="summary-item"><div class="num">' + escapeHtml(comp.pkg) + '</div><div class="label">资源包</div></div>';
+  html += '</div></div>';
+
+  // 被谁引用（反向引用）
+  var refByTarget = fguiRefByTarget && fguiRefByTarget[rid] ? fguiRefByTarget[rid] : [];
+  html += '<div class="card"><div class="card-title">📥 被引用 <span class="badge badge-red">' + refByTarget.length + ' 处</span></div>';
+  if (refByTarget.length > 0) {
+    html += '<table class="sr-result-table"><tr><th>引用方ID</th><th>组件名</th><th>资源包</th></tr>';
+    for (var i = 0; i < Math.min(refByTarget.length, 100); i++) {
+      var ref = refByTarget[i];
+      var refComp = fguiComps[ref.fi] || {n: '?', p: '?'};
+      html += '<tr>';
+      html += '<td style="font-family:monospace;color:#60a0ff;cursor:pointer;" onclick="showFguiDetail(\'' + ref.fi + '\')">' + escapeHtml(ref.fi) + '</td>';
+      html += '<td style="cursor:pointer;color:#80ff80;" onclick="showFguiDetail(\'' + ref.fi + '\')">' + escapeHtml(refComp.n) + '</td>';
+      html += '<td style="color:#aaa;">' + escapeHtml(ref.fp) + '</td>';
+      html += '</tr>';
+    }
+    if (refByTarget.length > 100) {
+      html += '<tr><td colspan="3" style="color:#888;text-align:center;">...还有 ' + (refByTarget.length - 100) + ' 处引用</td></tr>';
+    }
+    html += '</table>';
+  } else {
+    html += '<div style="color:#666;padding:12px;">未被其他组件引用</div>';
+  }
+  html += '</div>';
+
+  // 引用了谁（正向引用）
+  var refBySource = fguiRefBySource && fguiRefBySource[rid] ? fguiRefBySource[rid] : [];
+  html += '<div class="card"><div class="card-title">📤 引用了 <span class="badge badge-yellow">' + refBySource.length + ' 个</span></div>';
+  if (refBySource.length > 0) {
+    html += '<table class="sr-result-table"><tr><th>目标ID</th><th>组件名</th><th>资源包</th></tr>';
+    for (var i = 0; i < Math.min(refBySource.length, 100); i++) {
+      var ref = refBySource[i];
+      var refComp = fguiComps[ref.ti] || {n: '?', p: '?'};
+      html += '<tr>';
+      html += '<td style="font-family:monospace;color:#60a0ff;cursor:pointer;" onclick="showFguiDetail(\'' + ref.ti + '\')">' + escapeHtml(ref.ti) + '</td>';
+      html += '<td style="cursor:pointer;color:#80ff80;" onclick="showFguiDetail(\'' + ref.ti + '\')">' + escapeHtml(refComp.n) + '</td>';
+      html += '<td style="color:#aaa;">' + escapeHtml(ref.tp) + '</td>';
+      html += '</tr>';
+    }
+    if (refBySource.length > 100) {
+      html += '<tr><td colspan="3" style="color:#888;text-align:center;">...还有 ' + (refBySource.length - 100) + ' 个引用</td></tr>';
+    }
+    html += '</table>';
+  } else {
+    html += '<div style="color:#666;padding:12px;">未引用其他组件</div>';
+  }
+  html += '</div>';
+
+  $('fguiResultArea').innerHTML = html;
 }
 
 // ============================================================
