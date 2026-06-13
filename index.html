@@ -117,6 +117,13 @@ body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background:#0a
 /* 区域分隔标签 */
 .section-label { font-size:13px; color:#666; padding:8px 0 4px; text-transform:uppercase; letter-spacing:2px; border-bottom:1px solid #1e2235; margin-bottom:12px; margin-top:8px; }
 
+/* 概念对照卡片内嵌 */
+.concept-map-card { background:#1a1e2e; border:1px solid #2a2a4a; border-radius:8px; padding:12px; margin-bottom:8px; }
+.concept-map-card .cm-head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.concept-map-card .cm-name { font-size:15px; font-weight:bold; color:#e0e0e0; }
+.concept-map-card .cm-mapping { font-size:13px; color:#888; }
+.concept-map-card .cm-tables { font-size:12px; color:#666; margin-top:4px; }
+
 @media(max-width:600px) {
   .header h1 { font-size:18px; }
   .main { padding:16px 12px; }
@@ -133,7 +140,7 @@ body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background:#0a
 
 <div class="header">
   <h1 onclick="goHome()">🔮 灵动仙府 · 配置表导航器</h1>
-  <span>v2.0 · 策划端适配器</span>
+  <span>v2.1 · 策划端适配器</span>
 </div>
 
 <div class="main">
@@ -170,7 +177,7 @@ body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background:#0a
 // ============================================================
 // 数据
 // ============================================================
-const DATA = {
+var DATA = {
   conceptMap: {
     "灵兽": { bottomTable:"dinosaur", bottomConcept:"恐龙", idField:"id", links:["dinosaurLevelUp","dinosaurHatch","dinosaurCondition","dinosaurArmyConfig","dinosaurMission","dinosaurShootLevel","DinosaurRoadCarnivorous","DinosaurRoadHerbivorous","DinosaurRoadOmnivorous","buildingData4Dinosaur","dinosaurRankShow","dinosaurBloodTransfer"], status:"red", desc:"50条恐龙→灵兽，prefabPath/imageIcon全换，type分类需重定义" },
     "修士": { bottomTable:"heroData", bottomConcept:"英雄", idField:"id", links:["heroLevelUp","heroSkillLevelUp","heroStarNew","heroEquipment","heroEvolution","heroRank","heroSelect","heroLove","heroEcho","heroEff","heroEquipmentSuit","heroComponent","heroExchange"], status:"red", desc:"132条英雄→修士，4组技能ID、品质、定位需重配" },
@@ -271,10 +278,44 @@ const DATA = {
     }
   },
   operations: {
-    "加灵兽": {
+    "宗主": {
+      desc:"修改领主/掌门天赋",
+      relatedMap:["掌门"],
+      relatedRename:["掌门天赋名"],
+      steps:[
+        {table:"lordTalent",action:"修改天赋数据(952行)",must:true},
+        {table:"lordTalentForm",action:"天赋结构",must:false},
+        {table:"lordTalentSkill",action:"天赋技能",must:false},
+        {table:"lordEquip",action:"领主装备关联",must:false},
+        {table:"lordEquipSuit",action:"装备套装",must:false},
+        {table:"lordGemstone",action:"宝石镶嵌",must:false},
+        {table:"buff",action:"确认天赋效果buff ID",must:false},
+        {table:"buildingData",action:"检查是否有建筑引用此天赋为前置",must:false,note:"⚠️反向影响"}
+      ]
+    },
+    "修士": {
+      desc:"新增一个修士(英雄)",
+      relatedMap:["修士"],
+      relatedRename:["修士/英雄名"],
+      steps:[
+        {table:"heroData",action:"新增行: 品质/定位/4组技能ID/属性展示",must:true},
+        {table:"heroLevelUp",action:"新增N行: 等级经验/属性曲线(按品质模板)",must:true},
+        {table:"heroSkillLevelUp",action:"新增4组技能的升级数据(SLG×2+三消×2)",must:true},
+        {table:"heroEff",action:"技能效果数据",must:true},
+        {table:"heroStarNew",action:"新增升星/渡槽数据(碎片消耗)",must:true},
+        {table:"props",action:"确认碎片道具ID存在(如修士碎片)",must:true,note:"碎片需先在props中创建"},
+        {table:"heroEquipment",action:"新增法器/装备关联",must:false,note:"有装备系统时"},
+        {table:"heroEquipmentSuit",action:"套装效果",must:false},
+        {table:"heroEvolution",action:"进化/飞升数据",must:false},
+        {table:"heroRank",action:"品阶数据",must:false},
+        {table:"heroSelect",action:"选择/招募配置",must:false},
+        {table:"buff",action:"确认技能效果buff ID存在",must:false},
+        {table:"building",action:"确认解锁建筑条件有效",must:false}
+      ]
+    },
+    "灵兽": {
       desc:"新增一个灵兽(恐龙)",
-      relatedConcepts:["灵兽"],
-      relatedMap:{building:"建筑名对照(灵兽专属建筑)",soldier:"兵种名对照(灵兽绑定兵种)",dinosaur:"灵兽/恐龙名对照"},
+      relatedMap:["灵兽"],
       relatedRename:["灵兽/恐龙名"],
       steps:[
         {table:"dinosaur",action:"新增行: 名字/品质/类型/兵种/prefab",must:true},
@@ -292,31 +333,23 @@ const DATA = {
         {table:"dinosaurBloodTransfer",action:"血脉转移",must:false}
       ]
     },
-    "加修士": {
-      desc:"新增一个修士(英雄)",
-      relatedConcepts:["修士"],
-      relatedMap:{heroData:"修士/英雄名对照",props:"道具名对照(修士碎片等)",heroEquipment:"法器/装备名对照"},
-      relatedRename:["修士/英雄名"],
+    "功法": {
+      desc:"修改一个科技/功法",
+      relatedMap:["功法"],
+      relatedRename:["功法/科技名"],
       steps:[
-        {table:"heroData",action:"新增行: 品质/定位/4组技能ID/属性展示",must:true},
-        {table:"heroLevelUp",action:"新增N行: 等级经验/属性曲线(按品质模板)",must:true},
-        {table:"heroSkillLevelUp",action:"新增4组技能的升级数据(SLG×2+三消×2)",must:true},
-        {table:"heroEff",action:"技能效果数据",must:true},
-        {table:"heroStarNew",action:"新增升星/渡槂数据(碎片消耗)",must:true},
-        {table:"props",action:"确认碎片道具ID存在(如修士碎片)",must:true,note:"碎片需先在props中创建"},
-        {table:"heroEquipment",action:"新增法器/装备关联",must:false,note:"有装备系统时"},
-        {table:"heroEquipmentSuit",action:"套装效果",must:false},
-        {table:"heroEvolution",action:"进化/飞升数据",must:false},
-        {table:"heroRank",action:"品阶数据",must:false},
-        {table:"heroSelect",action:"选择/招募配置",must:false},
-        {table:"buff",action:"确认技能效果buff ID存在",must:false},
-        {table:"building",action:"确认解锁建筑条件有效",must:false}
+        {table:"research",action:"修改科技数据(名/消耗/效果/前置)",must:true},
+        {table:"researchForm",action:"检查科技树结构",must:false,note:"树结构变更时"},
+        {table:"researchPos",action:"检查科技树位置",must:false},
+        {table:"buff",action:"检查effect引用的buff ID",must:false},
+        {table:"buildingData",action:"检查是否有建筑升级前置=此科技",must:false,note:"⚠️反向影响"},
+        {table:"lordTalent",action:"检查是否有天赋前置=此科技",must:false,note:"⚠️反向影响"},
+        {table:"allianceTechnology",action:"检查是否有联盟灵术前置=此科技",must:false,note:"⚠️反向影响"}
       ]
     },
-    "改建筑": {
+    "建筑": {
       desc:"修改某个建筑的数据",
-      relatedConcepts:["建筑"],
-      relatedMap:{building:"建筑名对照表",buildingData:"建筑升级描述"},
+      relatedMap:["建筑"],
       relatedRename:["建筑名"],
       steps:[
         {table:"building",action:"修改建筑定义(名字/类型/区域)",must:true},
@@ -331,33 +364,16 @@ const DATA = {
         {table:"aliBuildingCost",action:"联盟建筑成本",must:false}
       ]
     },
-    "改功法": {
-      desc:"修改一个科技/功法",
-      relatedConcepts:["功法"],
-      relatedMap:{research:"功法/科技名对照"},
-      relatedRename:["功法/科技名"],
-      steps:[
-        {table:"research",action:"修改科技数据(名/消耗/效果/前置)",must:true},
-        {table:"researchForm",action:"检查科技树结构",must:false,note:"树结构变更时"},
-        {table:"researchPos",action:"检查科技树位置",must:false},
-        {table:"buff",action:"检查effect引用的buff ID",must:false},
-        {table:"buildingData",action:"检查是否有建筑升级前置=此科技",must:false,note:"⚠️反向影响"},
-        {table:"lordTalent",action:"检查是否有天赋前置=此科技",must:false,note:"⚠️反向影响"},
-        {table:"allianceTechnology",action:"检查是否有联盟灵术前置=此科技",must:false,note:"⚠️反向影响"}
-      ]
-    },
-    "改文案": {
+    "文案": {
       desc:"搜索并替换配置表中的文字内容",
-      relatedConcepts:[],
-      relatedMap:{},
-      relatedRename:null, // null = 显示全部改名类别
+      relatedMap:["修士","灵兽","建筑","道具","功法","掌门"],
+      relatedRename:null,
       hasSearchReplace:true,
       steps:[]
     },
-    "配活动奖励": {
+    "活动": {
       desc:"配置一个活动的奖励",
-      relatedConcepts:["奖励包","道具"],
-      relatedMap:{dropBag:"掉落包对照",props:"道具名对照"},
+      relatedMap:["奖励包","道具"],
       relatedRename:["道具名"],
       steps:[
         {table:"activityTypes",action:"确认活动类型",must:true},
@@ -373,49 +389,68 @@ const DATA = {
         {table:"allianceGift",action:"联盟礼物(如涉及)",must:false},
         {table:"activitySlotDropPool",action:"奖池配置(如涉及)",must:false}
       ]
-    },
-    "改掌门天赋": {
-      desc:"修改领主/掌门天赋",
-      relatedConcepts:["掌门"],
-      relatedMap:{lordTalent:"掌门/领主天赋名对照"},
-      relatedRename:["掌门天赋名"],
-      steps:[
-        {table:"lordTalent",action:"修改天赋数据(952行)",must:true},
-        {table:"lordTalentForm",action:"天赋结构",must:false},
-        {table:"lordTalentSkill",action:"天赋技能",must:false},
-        {table:"lordEquip",action:"领主装备关联",must:false},
-        {table:"lordEquipSuit",action:"装备套装",must:false},
-        {table:"lordGemstone",action:"宝石镶嵌",must:false},
-        {table:"buff",action:"确认天赋效果buff ID",must:false},
-        {table:"buildingData",action:"检查是否有建筑引用此天赋为前置",must:false,note:"⚠️反向影响"}
-      ]
     }
   }
 };
 
-const TABLE_CN = {
+var TABLE_CN = {
   allianceTechnology:'联盟灵术', buff:'增益', building:'建筑', buildingData:'建筑升级',
   dinosaur:'灵兽/恐龙', dragon:'龙', heroEquipment:'法器/装备', lordTalent:'掌门天赋',
   monster:'魔物', props:'道具', research:'功法/科技', soldier:'兵种',
   allianceLevel:'联盟等级', activity:'活动', dropBag:'掉落包', heroData:'修士/英雄',
-  heroLevelUp:'修士升级', heroStarNew:'修士升星', dinosaurLevelUp:'灵兽升级', basic:'基础'
+  heroLevelUp:'修士升级', heroStarNew:'修士升星', dinosaurLevelUp:'灵兽升级', basic:'基础',
+  dinosaurHatch:'灵兽孵化', dinosaurCondition:'灵兽解锁', dinosaurArmyConfig:'灵兽编队',
+  dinosaurMission:'灵兽任务', dinosaurShootLevel:'灵兽射击', dinosaurRankShow:'灵兽排名',
+  dinosaurBloodTransfer:'血脉转移', heroSkillLevelUp:'修士技能升级', heroEff:'修士技能效果',
+  heroEvolution:'修士进化', heroRank:'修士品阶', heroSelect:'修士招募', heroLove:'修士好感',
+  heroEcho:'修士回响', heroEquipmentSuit:'法器套装', heroComponent:'修士碎片',
+  heroExchange:'修士兑换', lordTalentForm:'天赋结构', lordTalentSkill:'天赋技能',
+  lordEquip:'掌门装备', lordEquipSuit:'装备套装', lordEquipUpgradeSuit:'装备升级套装',
+  lordGemstone:'宝石', lordGemstoneSuit:'宝石套装', lordForm:'掌门形态',
+  lordSkin:'掌门皮肤', lordSkinGet:'掌门皮肤获取', lordHeadIcon:'掌门头像',
+  lordInfo:'掌门信息', buildingIcon:'建筑图标', buildingData4Dinosaur:'灵兽专属建筑',
+  buildingQuantumStage:'建筑量子阶段', aliBuildingCost:'联盟建筑成本',
+  disappearBuildingData:'消失建筑', researchForm:'科技树结构', researchPos:'科技树位置',
+  behemothGear:'仙兽装备', behemothGearLevel:'仙兽装备等级', behemothGearTier:'仙兽装备阶',
+  behemothAffix:'仙兽词缀', behemothAffixPool:'仙兽词缀池', behemothAffixSet:'仙兽词缀套装',
+  soldierCardLevelUp:'兵种卡升级', soliderTeam:'兵种编队', slgFightSoldierData:'战斗兵种',
+  armyPreSet:'编队预设', armyActivityInfo:'活动兵种', armyActivitySoldier:'活动兵种数据',
+  propsExchange:'道具兑换', dropRandom:'随机掉落', dropProps:'掉落道具',
+  chooseDropRandomProps:'选择随机掉落', buffBasic:'基础增益', buffCharge:'增益充能',
+  buffRes:'增益资源', allianceTechnologyForm:'灵术结构', shipDragon:'灵舟龙',
+  shipExpedition:'灵舟远征', shipRefresh:'灵舟刷新', shipVip:'灵舟VIP',
+  mechaBehemothLvUp:'傀儡升级', mechaBehemothPassive:'傀儡被动', mechaBehemothSkillLvUp:'傀儡技能升级',
+  dragonLevel:'龙等级', dragonlevelup:'龙升级', dragonskill:'龙技能',
+  dragonskillcontrol:'龙技能控制', dragonTreasure:'龙宝物',
+  petLevelUp:'灵宠升级', petRefinement:'灵宠精炼', petSkill:'灵宠技能',
+  petTreasure:'灵宠宝物', petTreasurePool:'灵宠宝物池', petTreasurePos:'灵宠宝物位置',
+  petAdoption:'灵宠领养', monsterPve:'PVE魔物', monsterPvp:'PVP魔物',
+  monsterActivityLocation:'魔物活动位置', monsterDragon:'魔物龙',
+  dropLotteryRandom:'抽奖随机掉落', activityGroup:'活动分组',
+  activityQuestGroup:'活动任务组', quest:'任务', allianceGift:'联盟礼物',
+  activitySlotDropPool:'奖池配置', behegamelevel:'巨兽游戏等级', behegamemonster:'巨兽游戏怪物',
+  behegameprobability:'巨兽游戏概率', behegameattribute:'巨兽游戏属性',
+  behegamebuff:'巨兽游戏增益', behegameevent:'巨兽游戏事件',
+  behegamegrid:'巨兽游戏网格', behegamelayer:'巨兽游戏层',
+  DinosaurRoadCarnivorous:'灵兽道·肉食', DinosaurRoadHerbivorous:'灵兽道·草食',
+  DinosaurRoadOmnivorous:'灵兽道·杂食'
 };
 
-const $ = id => document.getElementById(id);
-let currentOp = null;
+var $ = function(id) { return document.getElementById(id); };
+var currentOp = null;
 
 // ============================================================
 // 操作按钮初始化
 // ============================================================
 function initOpBtns() {
   var btns = [
-    {label:'加灵兽', op:'加灵兽', cls:'red'},
-    {label:'加修士', op:'加修士', cls:'red'},
-    {label:'改建筑', op:'改建筑', cls:'yellow'},
-    {label:'改功法', op:'改功法', cls:'yellow'},
-    {label:'改文案', op:'改文案', cls:'green'},
-    {label:'配活动奖励', op:'配活动奖励', cls:'yellow'},
-    {label:'改掌门天赋', op:'改掌门天赋', cls:'red'},
+    {label:'宗主', op:'宗主', cls:'red'},
+    {label:'修士', op:'修士', cls:'red'},
+    {label:'灵兽', op:'灵兽', cls:'red'},
+    {label:'功法', op:'功法', cls:'yellow'},
+    {label:'建筑', op:'建筑', cls:'yellow'},
+    {label:'文案', op:'文案', cls:'green'},
+    {label:'活动', op:'活动', cls:'yellow'},
   ];
   var container = $('opBtns');
   for (var i = 0; i < btns.length; i++) {
@@ -473,9 +508,7 @@ function renderConceptGlobal(el) {
 function goConcept(name) {
   var info = DATA.conceptMap[name];
   if (!info) return;
-  // 滚到主内容区
   $('mainContent').scrollIntoView({behavior:'smooth'});
-  // 显示概念详情
   showConceptDetail(name);
 }
 
@@ -569,6 +602,52 @@ function showOp(op) {
   html += '<span class="desc">' + opInfo.desc + '</span>';
   html += '</div>';
 
+  // === 对照表（优先级第一） ===
+  if (opInfo.relatedMap && opInfo.relatedMap.length > 0) {
+    html += '<div class="section-label">📊 对照表</div>';
+    for (var mi = 0; mi < opInfo.relatedMap.length; mi++) {
+      var conceptName = opInfo.relatedMap[mi];
+      var conceptInfo = DATA.conceptMap[conceptName];
+      if (!conceptInfo) continue;
+
+      // 概念对照卡片
+      html += '<div class="card">';
+      html += '<div class="card-title">' + conceptName + ' ' + statusBadge(conceptInfo.status) + '</div>';
+      html += '<div style="color:#aaa;font-size:13px;margin-bottom:12px;">' + conceptInfo.desc + '</div>';
+      html += '<div class="concept-map-card">';
+      html += '<div class="cm-head"><span class="cm-name">' + conceptInfo.bottomConcept + '</span><span class="cm-mapping">→ ' + conceptName + '</span></div>';
+      html += '<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;margin-top:6px;">';
+      html += '<span style="color:#888;">主表: <strong style="color:#e0e0e0;">' + conceptInfo.bottomTable + '</strong></span>';
+      html += '<span style="color:#888;">ID字段: <strong style="color:#e0e0e0;">' + conceptInfo.idField + '</strong></span>';
+      html += '<span style="color:#888;">关联: <strong style="color:#e0e0e0;">' + conceptInfo.links.length + '张表</strong></span>';
+      html += '</div>';
+      html += '<div class="cm-tables" style="margin-top:8px;">关联表: ' + conceptInfo.links.join(', ') + '</div>';
+      html += '</div>';
+      html += '</div>';
+
+      // 建筑概念 → 展示建筑名对照
+      if (conceptName === '建筑') {
+        html += '<div class="card"><div class="card-title">🏠 建筑名对照</div>';
+        html += '<div class="map-row"><span class="map-old" style="font-weight:bold;">底层名</span><span class="map-arrow"></span><span class="map-new" style="font-weight:bold;">修仙名</span></div>';
+        for (var old in DATA.buildingMap) {
+          html += '<div class="map-row"><span class="map-old">' + old + '</span><span class="map-arrow">→</span><span class="map-new">' + DATA.buildingMap[old] + '</span></div>';
+        }
+        html += '</div>';
+      }
+
+      // 道具概念 → 展示资源ID对照
+      if (conceptName === '道具') {
+        html += '<div class="card"><div class="card-title">💎 资源ID对照</div>';
+        html += '<div class="map-row"><span class="map-old" style="font-weight:bold;">ID</span><span class="map-arrow"></span><span class="map-new" style="font-weight:bold;">修仙名(底层名)</span></div>';
+        for (var id in DATA.resourceMap) {
+          var m = DATA.resourceMap[id];
+          html += '<div class="map-row"><span class="map-old">' + id + '</span><span class="map-arrow">→</span><span class="map-new">' + m.xiu + '(' + m.old + ')</span></div>';
+        }
+        html += '</div>';
+      }
+    }
+  }
+
   // === 操作指引（有步骤的操作才显示） ===
   if (opInfo.steps && opInfo.steps.length > 0) {
     var mustSteps = [], optSteps = [];
@@ -600,32 +679,9 @@ function showOp(op) {
     }
   }
 
-  // === 对照表（操作相关的映射关系） ===
-  if (opInfo.relatedMap && Object.keys(opInfo.relatedMap).length > 0) {
-    html += '<div class="section-label">📊 对照表</div>';
-    // 建筑名对照
-    if (opInfo.relatedMap.building || opInfo.relatedMap.buildingData) {
-      html += '<div class="card"><div class="card-title">🏠 建筑名对照</div>';
-      html += '<div class="map-row"><span class="map-old" style="font-weight:bold;">底层名</span><span class="map-arrow"></span><span class="map-new" style="font-weight:bold;">修仙名</span></div>';
-      for (var old in DATA.buildingMap) {
-        html += '<div class="map-row"><span class="map-old">' + old + '</span><span class="map-arrow">→</span><span class="map-new">' + DATA.buildingMap[old] + '</span></div>';
-      }
-      html += '</div>';
-    }
-    // 资源ID对照
-    html += '<div class="card"><div class="card-title">💎 资源ID对照</div>';
-    html += '<div class="map-row"><span class="map-old" style="font-weight:bold;">ID</span><span class="map-arrow"></span><span class="map-new" style="font-weight:bold;">修仙名(底层名)</span></div>';
-    for (var id in DATA.resourceMap) {
-      var m = DATA.resourceMap[id];
-      html += '<div class="map-row"><span class="map-old">' + id + '</span><span class="map-arrow">→</span><span class="map-new">' + m.xiu + '(' + m.old + ')</span></div>';
-    }
-    html += '</div>';
-  }
-
   // === 依赖查询（操作涉及的表的反向依赖） ===
   if (opInfo.steps && opInfo.steps.length > 0) {
     html += '<div class="section-label">🔗 依赖查询</div>';
-    // 收集该操作涉及的所有表
     var opTables = [];
     for (var i = 0; i < opInfo.steps.length; i++) {
       var t = opInfo.steps[i].table.replace('*','');
@@ -646,7 +702,7 @@ function showOp(op) {
   // === 改名速查（操作相关类别） ===
   if (opInfo.relatedRename !== undefined) {
     var cats = DATA.renameGuide.categories;
-    var showCats = opInfo.relatedRename; // null=全部, array=指定类别
+    var showCats = opInfo.relatedRename;
     html += '<div class="section-label">✏️ 改名速查</div>';
     html += '<div style="color:#aaa;font-size:13px;margin-bottom:12px;">改这个领域的名字，需要翻哪些表的哪些字段</div>';
     for (var catName in cats) {
@@ -673,7 +729,7 @@ function showOp(op) {
     }
   }
 
-  // === 搜索替换（改文案专属） ===
+  // === 搜索替换（文案专属） ===
   if (opInfo.hasSearchReplace) {
     html += '<div class="section-label">🔍 全局文案搜索替换</div>';
     html += renderSearchReplaceHTML();
@@ -730,7 +786,7 @@ function showOpDeps(tableName) {
 function goHome() {
   currentOp = null;
   setActiveBtn(null);
-  $('mainContent').innerHTML = '<div style="text-align:center;padding:60px 20px;color:#666;"><div style="font-size:48px;margin-bottom:16px;">🎯</div><p style="font-size:14px;line-height:1.8;">点击上方操作按钮，开始你需要的操作<br>每个操作会展示相关的指引、对照表、依赖和搜索工具</p></div>';
+  $('mainContent').innerHTML = '<div style="text-align:center;padding:60px 20px;color:#666;"><div style="font-size:48px;margin-bottom:16px;">🎯</div><p style="font-size:14px;line-height:1.8;">点击上方操作按钮，开始你需要的操作<br>每个操作会展示相关的对照表、指引、依赖和搜索工具</p></div>';
 }
 
 // ============================================================
