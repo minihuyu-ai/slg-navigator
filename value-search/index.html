@@ -55,6 +55,7 @@
     .tc{color:var(--green)}
     .tr{color:var(--text2);font-size:12px}
     .tm{font-size:11px;padding:1px 6px;background:rgba(88,166,255,.1);color:var(--accent);border-radius:4px;white-space:nowrap}
+.cna{font-size:11px;color:var(--text2);font-weight:400}
     .dbox{margin-top:8px;padding:10px 12px;background:rgba(88,166,255,.04);border:1px solid rgba(88,166,255,.1);border-radius:6px;font-size:12px}
     .dbox .dl{color:var(--text2)}
     .dbox .dv{color:var(--text)}
@@ -157,6 +158,7 @@ function search(q){
 function fmod(res,mod){if(!mod)return res;return res.map(r=>{const fr=(r.refs||[]).filter(ref=>MM[ref.split('::')[0]]===mod);return fr.length?{...r,refs:fr,_orc:r.refs.length}:null}).filter(Boolean)}
 
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function cn(fn){const e=RG[fn+'.xlsx'];return e?.cn_name?` <span class="cna">(${esc(e.cn_name)})</span>`:''}
 
 function render(res,ms){
   const c=document.getElementById('results'),si=document.getElementById('sinfo');
@@ -170,11 +172,11 @@ function render(res,ms){
     h+=`<div class="rcard"><div class="rheader" onclick="tog(this)"><div class="rkey">${tt} <span class="idv">${esc(r.key)}</span>${nm}${idh}${mt}</div><div class="rcnt">${rc} ▾</div></div><div class="rbody">`;
     if(refs.length){h+=`<table class="rtable"><tr><th>#</th><th>配置表</th><th>Sheet</th><th>列名</th><th>行号</th><th>模块</th></tr>`;
       refs.forEach((ref,i)=>{const p=ref.split('::'),[fn,sh,col,rw]=p,md=MM[fn]||'-';
-        h+=`<tr><td>${i+1}</td><td class="tf">${esc(fn.replace('.xlsx',''))}</td><td class="ts">${esc(sh)}</td><td class="tc">${esc(col)}</td><td class="tr">${esc(rw)}</td><td><span class="tm">${esc(md)}</span></td></tr>`});
+        h+=`<tr><td>${i+1}</td><td class="tf">${esc(fn.replace('.xlsx',''))}${cn(fn)}</td><td class="ts">${esc(sh)}</td><td class="tc">${esc(col)}</td><td class="tr">${esc(rw)}</td><td><span class="tm">${esc(md)}</span></td></tr>`});
       h+=`</table>`;
-      const fi=REGISTRY[refs[0].split('::')[0]];
+      const fi=RG[refs[0].split('::')[0]+'.xlsx'];
       if(fi){const si2=fi.sheets?.[refs[0].split('::')[1]];
-        if(si2)h+=`<div class="dbox"><span class="dl">路径:</span> <span class="dv">${esc(fi.path||'')}</span><br><span class="dl">行数:</span> <span class="dv">${si2.row_count||'?'}</span> <span class="dl" style="margin-left:12px">列数:</span> <span class="dv">${si2.header_count||si2.headers?.length||'?'}</span><div class="htags">${(si2.headers||[]).slice(0,20).map(x=>`<span class="ht">${esc(x)}</span>`).join('')}${(si2.headers||[]).length>20?'<span class="ht" style="color:var(--text2)">...</span>':''}</div></div>`}}
+        if(si2)h+=`<div class="dbox"><span class="dl">路径:</span> <span class="dv">${esc(fi.path||'')}</span> <span class="dl" style="margin-left:12px">中文名:</span> <span class="dv">${esc(fi.cn_name||'-')}</span><br><span class="dl">行数:</span> <span class="dv">${si2.row_count||'?'}</span> <span class="dl" style="margin-left:12px">列数:</span> <span class="dv">${si2.header_count||si2.headers?.length||'?'}</span><div class="htags">${(si2.headers||[]).slice(0,20).map(x=>`<span class="ht">${esc(x)}</span>`).join('')}${(si2.headers||[]).length>20?'<span class="ht" style="color:var(--text2)">...</span>':''}</div></div>`}}
     h+=`</div></div>`}
   c.innerHTML=h
 }
