@@ -184,11 +184,11 @@ function render(res,ms){
 function tog(hdr){const b=hdr.nextElementSibling;b.classList.toggle('show');const c=hdr.querySelector('.rcnt');c.textContent=c.textContent.includes('▾')?c.textContent.replace('▾','▴'):c.textContent.replace('▴','▾')}
 
 function modStats(){
-  const mc={};for(const[f,i]of Object.entries(RG)){const m=i.module||'?';if(!mc[m])mc[m]={t:0,r:0};mc[m].t++}
+  const mc={},mcn={};for(const[f,i]of Object.entries(RG)){const m=i.module||'?';if(!mc[m])mc[m]={t:0,r:0};mc[m].t++;if(!mcn[m]&&i.cn_name)mcn[m]=i.cn_name}
   for(const e of Object.values(VI))for(const ref of(e.refs||[])){const fn=ref.split('::')[0],m=MM[fn]||'?';if(mc[m])mc[m].r++}
   const sorted=Object.entries(mc).sort((a,b)=>b[1].r-a[1].r).slice(0,20);
-  document.getElementById('mGrid').innerHTML=sorted.map(([m,d])=>`<div class="mitem" onclick="document.getElementById('fMod').value='${esc(m)}'"><span class="mn">${esc(m)}</span><span class="mc">${d.t}表 · ${d.r}引用</span></div>`).join('');
-  const sel=document.getElementById('fMod');Object.keys(mc).sort().forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m+' ('+mc[m].t+'表)';sel.appendChild(o)});
+  document.getElementById('mGrid').innerHTML=sorted.map(([m,d])=>`<div class="mitem" onclick="document.getElementById('fMod').value='${esc(m)}'"><span class="mn">${esc(m)}${mcn[m]?` <span class="cna">(${esc(mcn[m])})</span>`:''}</span><span class="mc">${d.t}表 · ${d.r}引用</span></div>`).join('');
+  const sel=document.getElementById('fMod');Object.keys(mc).sort().forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m+(mcn[m]?' ('+mcn[m]+')':'')+' ('+mc[m].t+'表)';sel.appendChild(o)});
   document.getElementById('mSec').style.display='';document.getElementById('statM').textContent=Object.keys(mc).length
 }
 
