@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>灵动仙府 · 配置表值级关联搜索</title>
+  <style>
+    :root{--bg:#0d1117;--card:#161b22;--card2:#1c2333;--border:#30363d;--text:#c9d1d9;--text2:#8b949e;--accent:#58a6ff;--highlight:#f0883e;--green:#3fb950;--red:#f85149;--purple:#bc8cff;--cyan:#39d2c0}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    #loadingScreen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .3s}
+    #loadingScreen.hidden{opacity:0;pointer-events:none}
+    .loader-title{font-size:20px;color:var(--accent);margin-bottom:20px}
+    .loader-sub{font-size:13px;color:var(--text2);margin-bottom:16px}
+    .pbar{width:320px;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+    .pfill{height:100%;background:linear-gradient(90deg,var(--accent),var(--cyan));border-radius:3px;transition:width .3s;width:0}
+    .loader-status{font-size:12px;color:var(--text2);margin-top:12px}
+    .app{max-width:1100px;margin:0 auto;padding:20px 24px}
+    header{margin-bottom:24px}
+    header h1{font-size:22px;color:var(--accent);display:flex;align-items:center;gap:8px}
+    header h1 .tag{font-size:11px;padding:2px 8px;background:var(--green);color:#000;border-radius:10px;font-weight:600}
+    .sbar{display:flex;gap:20px;margin-top:8px;font-size:12px;color:var(--text2);flex-wrap:wrap}
+    .sbar b{color:var(--text)}
+    .sbar .dot{color:var(--border)}
+    .srow{display:flex;gap:8px;margin-bottom:10px}
+    .srow input{flex:1;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;outline:none;transition:border-color .2s}
+    .srow input:focus{border-color:var(--accent)}
+    .srow input::placeholder{color:var(--text2)}
+    .srow button{padding:10px 24px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s;white-space:nowrap}
+    .srow button:hover{background:#4493f8}
+    .frow{display:flex;gap:16px;font-size:13px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+    .frow label{cursor:pointer;display:flex;align-items:center;gap:4px;color:var(--text2);transition:color .2s}
+    .frow label:hover{color:var(--text)}
+    .frow select{padding:4px 8px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;outline:none}
+    .sinfo{font-size:13px;color:var(--text2);margin-bottom:16px}
+    .sinfo b{color:var(--accent)}
+    .rcard{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden}
+    .rheader{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;transition:background .15s}
+    .rheader:hover{background:var(--card2)}
+    .rkey{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .rkey .idv{color:var(--green)}
+    .rkey .nmv{color:var(--highlight);font-size:14px}
+    .rkey .ttag{font-size:10px;padding:1px 6px;border-radius:8px;font-weight:500}
+    .tid{background:rgba(63,185,80,.15);color:var(--green)}
+    .tnm{background:rgba(240,136,62,.15);color:var(--highlight)}
+    .rcnt{font-size:12px;color:var(--text2);white-space:nowrap}
+    .rbody{padding:0 16px 14px;display:none}
+    .rbody.show{display:block}
+    .rtable{width:100%;border-collapse:collapse;font-size:13px}
+    .rtable th{text-align:left;padding:6px 8px;color:var(--text2);border-bottom:1px solid var(--border);font-weight:500;font-size:12px}
+    .rtable td{padding:5px 8px;border-bottom:1px solid rgba(48,54,61,.5)}
+    .rtable tr:hover td{background:rgba(88,166,255,.04)}
+    .tf{color:var(--accent);font-weight:500}
+    .ts{color:var(--purple)}
+    .tc{color:var(--green)}
+    .tr{color:var(--text2);font-size:12px}
+    .tm{font-size:11px;padding:1px 6px;background:rgba(88,166,255,.1);color:var(--accent);border-radius:4px;white-space:nowrap}
+    .dbox{margin-top:8px;padding:10px 12px;background:rgba(88,166,255,.04);border:1px solid rgba(88,166,255,.1);border-radius:6px;font-size:12px}
+    .dbox .dl{color:var(--text2)}
+    .dbox .dv{color:var(--text)}
+    .dbox .htags{margin-top:6px;display:flex;flex-wrap:wrap;gap:4px}
+    .dbox .ht{padding:2px 6px;background:var(--card2);border-radius:3px;font-family:'Cascadia Code','Consolas',monospace;font-size:11px}
+    .nores{text-align:center;padding:60px 20px;color:var(--text2)}
+    .nores .ico{font-size:40px;margin-bottom:12px}
+    .nores .hint{font-size:13px;margin-top:8px}
+    .mstats{margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+    .mstats h2{font-size:16px;color:var(--text);margin-bottom:12px}
+    .mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
+    .mitem{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:6px;font-size:13px;cursor:pointer;transition:border-color .15s}
+    .mitem:hover{border-color:var(--accent)}
+    .mitem .mn{color:var(--text)}
+    .mitem .mc{color:var(--text2);font-size:12px}
+    @media(max-width:640px){.app{padding:16px}header h1{font-size:18px}.sbar{gap:8px}.srow{flex-direction:column}.mgrid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div id="loadingScreen">
+  <div class="loader-title">⚡ 灵动仙府 · 值级关联搜索</div>
+  <div class="loader-sub" id="loadStatus">正在加载数据索引...</div>
+  <div class="pbar"><div class="pfill" id="progressFill"></div></div>
+  <div class="loader-status" id="loadDetail">0 / 2 文件</div>
+</div>
+<div class="app" id="app" style="display:none">
+  <header>
+    <h1>⚡ 灵动仙府 · 值级关联搜索 <span class="tag">v1.0</span></h1>
+    <div class="sbar">
+      <span><b id="statT">0</b> 张配置表</span><span class="dot">·</span>
+      <span><b id="statV">0</b> 个索引值</span><span class="dot">·</span>
+      <span><b id="statR">0</b> 条引用</span><span class="dot">·</span>
+      <span><b id="statM">0</b> 个模块</span>
+    </div>
+  </header>
+  <section>
+    <div class="srow">
+      <input id="si" type="text" placeholder="输入 ID、名称或关键词搜索..." autofocus>
+      <button id="sb">搜索</button>
+    </div>
+    <div class="frow">
+      <label><input type="checkbox" id="fExact"> 仅精确</label>
+      <label><input type="checkbox" id="fId"> 仅ID</label>
+      <label><input type="checkbox" id="fName"> 仅名称</label>
+      <span style="color:var(--border)">|</span>
+      <label>模块：<select id="fMod"><option value="">全部</option></select></label>
+    </div>
+    <div class="sinfo" id="sinfo"></div>
+  </section>
+  <div id="results"></div>
+  <section class="mstats" id="mSec" style="display:none">
+    <h2>📊 模块引用统计 Top 20</h2>
+    <div class="mgrid" id="mGrid"></div>
+  </section>
+</div>
+<script>
+const DB='slg_vi',DV=1,ST='d';
+function odb(){return new Promise((a,b)=>{const r=indexedDB.open(DB,DV);r.onupgradeneeded=e=>e.target.result.createObjectStore(ST);r.onsuccess=e=>a(e.target.result);r.onerror=e=>b(e.target.error)})}
+async function dbG(k){const d=await odb();return new Promise((a,b)=>{const r=d.transaction(ST,'readonly').objectStore(ST).get(k);r.onsuccess=()=>a(r.result);r.onerror=()=>b(r.error)})}
+async function dbP(k,v){const d=await odb();return new Promise((a,b)=>{const t=d.transaction(ST,'readwrite');t.objectStore(ST).put(v,k);t.oncomplete=()=>a();t.onerror=()=>b(t.error)})}
+
+let VI={},RG={},MM={};
+
+async function loadData(){
+  const fill=document.getElementById('progressFill'),st=document.getElementById('loadStatus'),dt=document.getElementById('loadDetail');
+  try{const c=await dbG('vi'),cr=await dbG('cr'),ct=await dbG('ct');
+    if(c&&cr&&Date.now()-(ct||0)<864e5){st.textContent='从本地缓存加载...';VI=c;RG=cr;fill.style.width='100%';dt.textContent='缓存加载 ✓';return true}
+  }catch(e){}
+  st.textContent='正在加载值级索引 (20MB)...';dt.textContent='1/2';fill.style.width='10%';
+  try{const r=await fetch('./value_index.json');if(!r.ok)throw new Error('HTTP '+r.status);
+    const t=+r.headers.get('Content-Length')||20971520,rd=r.body.getReader(),ch=[];let ld=0;
+    while(true){const{done:d,value:v}=await rd.read();if(d)break;ch.push(v);ld+=v.length;fill.style.width=Math.min(90,10+ld/t*80)+'%';dt.textContent=(ld/1048576).toFixed(1)+'MB/'+(t/1048576).toFixed(1)+'MB'}
+    VI=await(new Blob(ch)).text().then(t=>JSON.parse(t))
+  }catch(e){st.textContent='❌ '+e.message;st.style.color='var(--red)';dt.textContent='请通过HTTP服务器访问';return false}
+  st.textContent='正在加载表结构映射...';dt.textContent='2/2';fill.style.width='92%';
+  try{RG=await fetch('./config_table_registry.json').then(r=>r.json())}catch(e){}
+  fill.style.width='98%';st.textContent='正在缓存到本地...';
+  try{await dbP('vi',VI);await dbP('cr',RG);await dbP('ct',Date.now())}catch(e){}
+  fill.style.width='100%';dt.textContent='加载完成 ✓';return true
+}
+
+function bmm(){MM={};for(const[f,i]of Object.entries(RG))if(i.module)MM[f]=i.module}
+function isNum(k){return/^-?\d+$/.test(k)}
+function lev(a,b){if(!a.length)return b.length;if(!b.length)return a.length;const m=a.length,n=b.length;let p=Array.from({length:n+1},(_,i)=>i),c=new Array(n+1);for(let i=1;i<=m;i++){c[0]=i;for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));[p,c]=[c,p]}return p[n]}
+
+function search(q){
+  const ex=document.getElementById('fExact').checked,io=document.getElementById('fId').checked,no=document.getElementById('fName').checked,mf=document.getElementById('fMod').value;
+  const ql=q.trim().toLowerCase();if(!ql)return[];
+  const res=[];
+  if(VI[q]){const e=VI[q],id=isNum(q);if((!io||id)&&(!no||!id))res.push({key:q,...e,score:100,mt:'精确匹配'})}
+  if(ex)return fmod(res,mf);
+  const ks=Object.keys(VI);
+  for(const k of ks){if(k===q)continue;const id=isNum(k);if(io&&!id)continue;if(no&&id)continue;
+    const kl=k.toLowerCase();let sc=0,mt='';
+    if(kl.startsWith(ql)){sc=80;mt='前缀'}else if(kl.includes(ql)){sc=50;mt='包含'}else if(ql.length>=2&&kl.length>=2&&lev(ql,kl)<=2){sc=20;mt='模糊'}
+    if(sc>0)res.push({key:k,...VI[k],score:sc,mt})}
+  res.sort((a,b)=>b.score-a.score);return fmod(res.slice(0,100),mf)
+}
+
+function fmod(res,mod){if(!mod)return res;return res.map(r=>{const fr=(r.refs||[]).filter(ref=>MM[ref.split('::')[0]]===mod);return fr.length?{...r,refs:fr,_orc:r.refs.length}:null}).filter(Boolean)}
+
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+function render(res,ms){
+  const c=document.getElementById('results'),si=document.getElementById('sinfo');
+  if(!res.length){si.textContent='';c.innerHTML='<div class="nores"><div class="ico">🔍</div><div>未找到匹配结果</div><div class="hint">试试输入ID数字、中文名称、或部分关键词</div></div>';return}
+  const tr=res.reduce((s,r)=>s+(r._orc||r.refs?.length||0),0);
+  si.innerHTML=`找到 <b>${res.length}</b> 个匹配，共 <b>${tr}</b> 处引用 (${ms}ms)`;
+  let h='';
+  for(const r of res){const refs=r.refs||[],id=isNum(r.key),nm=r.name?` <span class="nmv">${esc(r.name)}</span>`:'',idh=r.id?` <span class="nmv">ID: ${esc(r.id)}</span>`:'',
+    tt=id?'<span class="ttag tid">ID</span>':'<span class="ttag tnm">名称</span>',mt=r.mt?` <span style="font-size:10px;color:var(--text2)">${esc(r.mt)}</span>`:'',
+    rc=r._orc?`${refs.length}/${r._orc} 处引用`:`${refs.length} 处引用`;
+    h+=`<div class="rcard"><div class="rheader" onclick="tog(this)"><div class="rkey">${tt} <span class="idv">${esc(r.key)}</span>${nm}${idh}${mt}</div><div class="rcnt">${rc} ▾</div></div><div class="rbody">`;
+    if(refs.length){h+=`<table class="rtable"><tr><th>#</th><th>配置表</th><th>Sheet</th><th>列名</th><th>行号</th><th>模块</th></tr>`;
+      refs.forEach((ref,i)=>{const p=ref.split('::'),[fn,sh,col,rw]=p,md=MM[fn]||'-';
+        h+=`<tr><td>${i+1}</td><td class="tf">${esc(fn.replace('.xlsx',''))}</td><td class="ts">${esc(sh)}</td><td class="tc">${esc(col)}</td><td class="tr">${esc(rw)}</td><td><span class="tm">${esc(md)}</span></td></tr>`});
+      h+=`</table>`;
+      const fi=REGISTRY[refs[0].split('::')[0]];
+      if(fi){const si2=fi.sheets?.[refs[0].split('::')[1]];
+        if(si2)h+=`<div class="dbox"><span class="dl">路径:</span> <span class="dv">${esc(fi.path||'')}</span><br><span class="dl">行数:</span> <span class="dv">${si2.row_count||'?'}</span> <span class="dl" style="margin-left:12px">列数:</span> <span class="dv">${si2.header_count||si2.headers?.length||'?'}</span><div class="htags">${(si2.headers||[]).slice(0,20).map(x=>`<span class="ht">${esc(x)}</span>`).join('')}${(si2.headers||[]).length>20?'<span class="ht" style="color:var(--text2)">...</span>':''}</div></div>`}}
+    h+=`</div></div>`}
+  c.innerHTML=h
+}
+
+function tog(hdr){const b=hdr.nextElementSibling;b.classList.toggle('show');const c=hdr.querySelector('.rcnt');c.textContent=c.textContent.includes('▾')?c.textContent.replace('▾','▴'):c.textContent.replace('▴','▾')}
+
+function modStats(){
+  const mc={};for(const[f,i]of Object.entries(RG)){const m=i.module||'?';if(!mc[m])mc[m]={t:0,r:0};mc[m].t++}
+  for(const e of Object.values(VI))for(const ref of(e.refs||[])){const fn=ref.split('::')[0],m=MM[fn]||'?';if(mc[m])mc[m].r++}
+  const sorted=Object.entries(mc).sort((a,b)=>b[1].r-a[1].r).slice(0,20);
+  document.getElementById('mGrid').innerHTML=sorted.map(([m,d])=>`<div class="mitem" onclick="document.getElementById('fMod').value='${esc(m)}'"><span class="mn">${esc(m)}</span><span class="mc">${d.t}表 · ${d.r}引用</span></div>`).join('');
+  const sel=document.getElementById('fMod');Object.keys(mc).sort().forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m+' ('+mc[m].t+'表)';sel.appendChild(o)});
+  document.getElementById('mSec').style.display='';document.getElementById('statM').textContent=Object.keys(mc).length
+}
+
+let dbt;
+document.getElementById('si').addEventListener('input',()=>{clearTimeout(dbt);dbt=setTimeout(doSearch,300)});
+document.getElementById('sb').addEventListener('click',doSearch);
+document.getElementById('si').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch()});
+['fExact','fId','fName'].forEach(id=>document.getElementById(id).addEventListener('change',doSearch));
+document.getElementById('fMod').addEventListener('change',doSearch);
+
+function doSearch(){const q=document.getElementById('si').value.trim();if(!q){document.getElementById('results').innerHTML='';document.getElementById('sinfo').textContent='';return}const t0=performance.now();render(search(q),Math.round(performance.now()-t0))}
+
+async function init(){const ok=await loadData();if(ok===false)return;bmm();
+  const ts=Object.keys(RG).length,vs=Object.keys(VI).length;let tr=0;for(const e of Object.values(VI))tr+=(e.refs||[]).length;
+  document.getElementById('statT').textContent=ts;document.getElementById('statV').textContent=vs.toLocaleString();document.getElementById('statR').textContent=tr.toLocaleString();
+  document.getElementById('loadingScreen').classList.add('hidden');setTimeout(()=>document.getElementById('loadingScreen').style.display='none',300);document.getElementById('app').style.display='';
+  modStats()}
+init();
+</script>
+</body>
+</html>
